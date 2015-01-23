@@ -10,10 +10,10 @@ Essentially based on gelim/torrentz repository (https://github.com/gelim/torrent
 > npm install -g peerflix
 
 ## Usage
-Type in the terminal
+To show help type:
 > python zflix.py -h
 
-To show this help:
+It will output:
 >usage: zflix.py [-h] [-v] [-d DESTDIR] [-t TEAM] [-n] search
 >
 >positional arguments:
@@ -26,4 +26,7 @@ To show this help:
 >                        Destination of the downloaded torrent
 
 ## TODO
-- item Implement an external file to write personal preference for the video player for example (mpv is used by default here)
+- item Implement an external config file to write personal preference for the video player,... (mpv is used by default here)
+- item Add the possibility to download subtile.
+- item Auto remove the torrent downloaded at the end of the stream.
+- item Find a way to only output streamable movie/show from a search request on torrentz.
