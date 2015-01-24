@@ -9,15 +9,11 @@ import argparse
 import subprocess
 
 
-# Constant
-
 class AppURLopener(urllib.FancyURLopener):
     version = "Mozilla/5.0 (X11; U; Linux x86_64; en-US)" + \
         "AppleWebKit/532.0 (KHTML, like Gecko) Chrome/4.0.202.0 Safari/532.0"
 
 urllib._urlopener = AppURLopener()
-
-destdir = os.path.expanduser('~/Downloads')
 
 locations = {"h33t": {"url": "http://www.h33t.to",
                       "dl": "h33t.to/get/"},
@@ -52,6 +48,7 @@ class bcolors:
     FAIL = '\033[91m'
     ENDC = '\033[0m'
     BOLD = '\033[1;1m'
+    UNDERLINE = '\033[4m'
 
     def disable(self):
         self.HEADER = ''
@@ -172,7 +169,6 @@ def main(option, domain):
 
     print(bcolors.HEADER + feedTitle[0].get_text() + bcolors.ENDC)
     feedTitle.pop(0)
-    print(bcolors.HEADER + feedDescription[0].get_text() + bcolors.ENDC)
     feedDescription.pop(0)
 
     item_num = len(feedTitle)
@@ -192,12 +188,11 @@ def main(option, domain):
         seeds = description[4]
         peers = description[6]
 
-        print("{:3d}) {:50s}: Size: {:4s} MB Seeds: {:3s}  Peers: {:3s}".format(
-            i,
-            title if title < 50 else title[:50],
-            size,
-            bcolors.GREEN + seeds + bcolors.ENDC,
-            bcolors.RED + peers + bcolors.ENDC))
+        print('%2i) %50s: Size: %5sMB Seeds: %3s Peers: %3s' %
+              (i, title if len(title) < 50 else title[:50],
+               size,
+               bcolors.GREEN + seeds + bcolors.ENDC,
+               bcolors.WARNING + peers + bcolors.ENDC))
 
     sys.stdout.write("Which torrent to retrieve ? (or q to quit) : ")
     torrent = sys.stdin.readline()
@@ -207,6 +202,7 @@ def main(option, domain):
         sys.exit(0)
 
     trackerindex = feed.find_all('guid')[int(torrent)].get_text()
+
     # trackerindex = trackerindex.replace("node21", "www.torrentz.com")
 
     title = feedTitle[int(torrent)].get_text()
@@ -218,32 +214,41 @@ def main(option, domain):
     trackers = urllib.urlopen(trackerindex).read()
     # trackers var contain the source of the torrentz selectioned torrent page
 
-    outputPath = destdir + '/' + title + '.torrent'
-    # outputPath = '/home/thomacer/Downloads/' + title + '.torrent'
+    outputPath = option.destdir + '/' + title + '.torrent'
 
     hit = False
     downloadLocationTest = locationTesting(trackers, outputPath, title)
     while hit is False and hit is not None:
         hit = next(downloadLocationTest, None)
 
-    process = subprocess.Popen(('peerflix %s --mpv' % (outputPath)).split())
-    output = process.communicate()[0]
+    # Launch peerflix
+    subprocess.Popen(('peerflix %s --%s' % (outputPath, option.player)).split())
 
 
 if __name__ == "__main__":
+    defaultDestdir = os.path.expanduser('~/downloads')
+    domain = 'https://www.torrentz.com'
+    defaultPlayer = 'mpv'
+
     parser = argparse.ArgumentParser()
     parser.add_argument('search', type=str)
     parser.add_argument('-v', '--verbose', default=False, action='store_true',
                         help='Show more information the execution')
-    parser.add_argument('-d', '--destdir', default='~/Downloads', type=str,
+    parser.add_argument('-d', '--destdir', default=defaultDestdir, type=str,
                         help='Destination of the downloaded torrent')
     parser.add_argument('-n', '--no_verified', default=False,
                         action='store_true',
                         help='Option to do unverified search')
+    parser.add_argument('-nr', '--not_remove', default=False,
+                        action='store_true',
+                        help=("Don't erase the torrent you downloaded when "
+                              + "the stream is interrupted"))
+    parser.add_argument('-p', '--player', default=defaultPlayer, type=str,
+                        help=("Choose the player you want to use to watch"
+                              + " your streamed torrent"))
 
     option = parser.parse_args()
     DEBUG = option.verbose
-    domain = 'https://www.torrentz.com'
 
     if option.no_verified:
         domain += '/feedP'
