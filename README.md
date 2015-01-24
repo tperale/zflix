@@ -26,7 +26,7 @@ It will output:
 >                        Destination of the downloaded torrent
 
 ## TODO
-- item Implement an external config file to write personal preference for the video player,... (mpv is used by default here)
-- item Add the possibility to download subtile.
-- item Auto remove the torrent downloaded at the end of the stream.
-- item Find a way to only output streamable movie/show from a search request on torrentz.
+- Implement an external config file to write personal preference for the video player,... (mpv is used by default here)
+- Add the possibility to download subtile.
+- Auto remove the torrent downloaded at the end of the stream.
+- Find a way to only output streamable movie/show from a search request on torrentz.
