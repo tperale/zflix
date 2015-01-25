@@ -3,9 +3,9 @@ A python CLI to seek torrent on torrentz and directly stream them with peerflix.
 Essentially based on gelim/torrentz repository (https://github.com/gelim/torrentz).
 
 ## Requirements
-- item [python2](https://www.python.org/download/releases/2.7.8/)
-- item [BeautifulSoup](http://www.crummy.com/software/BeautifulSoup/bs4/doc/#installing-beautiful-soup) module
-- item [peerflix](https://github.com/mafintosh/peerflix)
+- [python2](https://www.python.org/download/releases/2.7.8/)
+- [BeautifulSoup](http://www.crummy.com/software/BeautifulSoup/bs4/doc/#installing-beautiful-soup) module
+- [peerflix](https://github.com/mafintosh/peerflix)
 
 > npm install -g peerflix
 
@@ -21,8 +21,10 @@ It will output:
 >
 >optional arguments:
 >  -h, --help            show this help message and exit
->  -v, --verbose         Show more information the execution
 >  -d DESTDIR, --destdir DESTDIR
+>  -p --player           Choose the player you want to use to watch your
+                         streamed torrent
+
 >                        Destination of the downloaded torrent
 
 ## TODO
