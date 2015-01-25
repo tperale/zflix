@@ -44,12 +44,8 @@ def gethref(page, toFind):
 
     href = urls[0].get('href')
 
-    if href is not None:
-        while match:
-            match = (toFind in urls[0].get('href'))
 
-    else:
-        match = False
+    match = False
     i = 0
 
     while not(match) and i < (len(urls) - 1):
@@ -59,7 +55,7 @@ def gethref(page, toFind):
 
         if href is not None:
             j = 0
-            while match:
+            while not(match) and j < len(toFind):
                 # Verify that each part of 'toFind' is in 'href'
                 match = (toFind[j] in href)
                 j += 1
