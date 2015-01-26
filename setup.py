@@ -4,7 +4,7 @@ except ImportError:
     from distutils.core import setup
 
 setup(
-    name='zflix', version='0.01',
+    name='zflix', version='0.02',
     description='Script that seek and play torrent',
     long_description=('A CLI script that search through torrentz your'
                       + ' demand and play it with peerflix'),
