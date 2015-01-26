@@ -5,6 +5,7 @@ import urllib
 import os
 import argparse
 import subprocess
+from configParser import parse_config
 from func import *
 
 
@@ -53,7 +54,7 @@ locations = {"h33t": {"url": "http://www.h33t.to",
 
 
 def main(option, domain):
-    trackerIndex = search_torrent(option.search.replace(' ', '+'), domain)
+    title,  trackerIndex = search_torrent(option.search.replace(' ', '+'), domain)
 
     print("GET %s" % trackerIndex)
 
@@ -79,34 +80,46 @@ def main(option, domain):
 
 
 if __name__ == "__main__":
-    defaultDestdir = os.path.expanduser('~/downloads')
     domain = 'https://www.torrentz.com'
-    defaultPlayer = 'mpv'
+    config = parse_config()
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('search', type=str)
-    parser.add_argument('-d', '--destdir', default=defaultDestdir, type=str,
-                        help='Destination of the downloaded torrent')
-    parser.add_argument('-n', '--no_verified', default=False,
-                        action='store_true',
-                        help='Option to do unverified search')
-    parser.add_argument('-c', '--check', default=False, action='store_true',
-                        help=('Check link before to output them (slower). '
-                              + 'Some link are deprecated.'))
-    parser.add_argument('-nr', '--not_remove', default=False,
-                        action='store_true',
-                        help=("Don't erase the torrent you downloaded when "
-                              + "the stream is interrupted"))
-    parser.add_argument('-p', '--player', default=defaultPlayer, type=str,
-                        help=("Choose the player you want to use to watch"
-                              + " your streamed torrent"))
+    try:
+        parser.add_argument('search', type=str)
+        parser.add_argument('-d', '--destdir',
+                            default=config.get('general', 'destdir'),
+                            type=str,
+                            help='Destination of the downloaded torrent')
+        parser.add_argument('-n', '--not_verified',
+                            default=config.get('general', 'not_verified'),
+                            action='store_true',
+                            help='Option to do unverified search')
+        parser.add_argument('-c', '--check', default=False, action='store_true',
+                            help=('Check link before to output them (slower). '
+                                + 'Some link are deprecated.'))
+        # TODO
+        parser.add_argument('-nr', '--not_remove', default=False,
+                            action='store_true',
+                            help=("Don't erase the torrent you downloaded when "
+                                + "the stream is interrupted"))
+        # TODO
+        parser.add_argument('-p', '--player',
+                            default=config.get('general', 'player'),
+                            type=str,
+                            help=("Choose the player you want to use to watch"
+                                + " your streamed torrent"))
+    except Exception as e:
+        print('Error parsing')
+        print(e)
 
-    option = parser.parse_args()
-
-    if option.no_verified:
-        domain += '/feedP'
     else:
-        domain += '/feed_verifiedP'
+        option = parser.parse_args()
 
-    option.destdir = os.path.expanduser(option.destdir)
+        if option.not_verified:
+            domain += '/feedP'
+        else:
+            domain += '/feed_verifiedP'
 
-    main(option, domain)
+        option.destdir = os.path.expanduser(option.destdir)
+
+        main(option, domain)

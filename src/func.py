@@ -74,14 +74,13 @@ def search_torrent(search, domain):
         print("Exiting the client.")
         sys.exit(0)
 
-    trackerindex = feed.find_all('guid')[int(torrentNum)].get_text()
-
-    # trackerindex = trackerindex.replace("node21", "www.torrentz.com")
+    trackerIndex = feed.find_all('guid')[int(torrentNum)].get_text()
 
     # formatting for saved torrent filename
     title = feedTitle[int(torrentNum)].get_text()
     title = title.replace(' ', '_').replace('/', '_')
 
+    return title, trackerIndex
 
 
 
