@@ -56,8 +56,8 @@ locations = {"h33t": {"url": "http://www.h33t.to",
                                  "dl": "www.torrentfunk.com/tor/*.torrent"},
              "limetorrents.cc": {"url": "http://www.limetorrents.cc",
                                  "dl": "itorrents.org/torrent/"},
-             "torrents.net": {"url": "http://www.torrents.net",
-                              "dl": "torrents.net/down/*.torrent"},
+#             "torrents.net": {"url": "http://www.torrents.net",
+#                              "dl": "torrents.net/down/*.torrent"},
              "vertor": {"url": "http://www.vertor.com",
                         "dl": "?mod=download."},
              "monova": {"url": "www.monova.org/torrent/",
@@ -143,8 +143,11 @@ def main(option, domain):
     while hit is False and hit is not None:
         hit = next(downloadLocationTest, None)
 
+
     # Launch peerflix
-    subprocess.Popen(('peerflix %s --%s' % (outputPath, option.player)).split())
+    if hit is not None:
+        subprocess.Popen(('peerflix %s --%s' %
+                          (outputPath, option.player)).split())
 
 
 if __name__ == "__main__":
@@ -158,6 +161,9 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--no_verified', default=False,
                         action='store_true',
                         help='Option to do unverified search')
+    parser.add_argument('-c', '--check', default=False, action='store_true',
+                        help=('Check link before to output them (slower). '
+                              + 'Some link are deprecated.'))
     parser.add_argument('-nr', '--not_remove', default=False,
                         action='store_true',
                         help=("Don't erase the torrent you downloaded when "
