@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import urllib
-import bs4
-import sys
 import os
 import argparse
 import subprocess
@@ -16,26 +14,6 @@ class AppURLopener(urllib.FancyURLopener):
 
 urllib._urlopener = AppURLopener()
 
-
-class bcolors:
-    HEADER = '\033[95m'
-    BLUE = '\033[94m'
-    RED = '\033[31m'
-    GREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1;1m'
-    UNDERLINE = '\033[4m'
-
-    def disable(self):
-        self.HEADER = ''
-        self.BLUE = ''
-        self.GREEN = ''
-        self.WARNING = ''
-        self.FAIL = ''
-        self.ENDC = ''
-        self.BOLD = ''
 
 
 locations = {"h33t": {"url": "http://www.h33t.to",
@@ -75,61 +53,11 @@ locations = {"h33t": {"url": "http://www.h33t.to",
 
 
 def main(option, domain):
-    search = option.search.replace(' ', '+')
-    torrentzPage = urllib.urlopen(domain + '?q=' + search).read()
-    feed = bs4.BeautifulSoup(torrentzPage)
-    feedTitle = feed.find_all('title')
-    feedDescription = feed.find_all('description')
+    trackerIndex = search_torrent(option.search.replace(' ', '+'), domain)
 
-    print(bcolors.HEADER + feedTitle[0].get_text() + bcolors.ENDC)
-    feedTitle.pop(0)
-    feedDescription.pop(0)
+    print("GET %s" % trackerIndex)
 
-    item_num = len(feedTitle)
-
-    if item_num == 0:
-        print("Sorry, no torrents found.")
-        if not option.no_verified:
-            print("Try: python " + ' '.join(sys.argv[:]) + ' -n')
-        sys.exit(0)
-
-    for i in range(item_num):
-        title = feedTitle[i].get_text()
-        description = feedDescription[i].get_text().split()
-        # We parse something like
-        # <description>Size: 4780 MB Seeds: 27 Peers: 17 Hash:
-        # a000000a00a0aaaa00aa0000a0aaa0a0000aa0aa </description>
-
-        size = description[1]
-        seeds = description[4]
-        peers = description[6]
-
-        print('%2i) %50s: Size: %5sMB Seeds: %3s Peers: %3s' %
-              (i,
-               title if len(title) < 50 else title[:50],
-               size,
-               bcolors.GREEN + seeds + bcolors.ENDC,
-               bcolors.WARNING + peers + bcolors.ENDC)
-              )
-
-    print("Which torrent to retrieve ? (or q to quit) : ")
-    torrentNum = sys.stdin.readline()
-
-    if torrentNum.strip() == "q":
-        print("Exiting the client.")
-        sys.exit(0)
-
-    trackerindex = feed.find_all('guid')[int(torrentNum)].get_text()
-
-    # trackerindex = trackerindex.replace("node21", "www.torrentz.com")
-
-    # formatting for saved torrent filename
-    title = feedTitle[int(torrentNum)].get_text()
-    title = title.replace(' ', '_').replace('/', '_')
-
-    print("GET %s" % trackerindex)
-
-    trackers = urllib.urlopen(trackerindex).read()
+    trackers = urllib.urlopen(trackerIndex).read()
     # trackers var contain the source of the torrentz selectioned torrent page
 
     outputPath = option.destdir + '/' + title + '.torrent'
