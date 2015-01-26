@@ -20,15 +20,15 @@ It will output:
 >  search
 >
 >optional arguments:
->  -h, --help            show this help message and exit
->  -d DESTDIR, --destdir DESTDIR
+>  -h, --help            show this help message and exit.
 >  -p --player           Choose the player you want to use to watch your
-                         streamed torrent
-
->                        Destination of the downloaded torrent
+                         streamed torrent.
+>  -d --destdir          Destination of the downloaded torrent.
+>  -n --not_verified     Option to do unverified search.
 
 ## TODO
-- Implement an external config file to write personal preference for the video player,... (mpv is used by default here)
 - Add the possibility to download subtile.
 - Auto remove the torrent downloaded at the end of the stream.
 - Find a way to only output streamable movie/show from a search request on torrentz.
+- Some link in the feed, send you to 404'd pages.
+- If no torrent is found, do not launch peerflix
