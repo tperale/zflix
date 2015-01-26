@@ -13,7 +13,8 @@ setup(
     url='https://github.com/thomacer/zflix',
     license='GPL V2',
     install_requires=[
-        'beautifulsoup4'  # BeautifulSoup version 4
+        'beautifulsoup4', # BeautifulSoup version 4
+        'ConfigParser'
     ],
     packages=['src'],
 )
