@@ -30,9 +30,47 @@ class bcolors:
         self.BOLD = ''
 
 
-def search_torrent(search, domain):
+def print_torrent(i, feedTitle, feedDescription):
+    """
+    Output the torrent name and some description for the torrent on position i
+    from feedTitle and feedDescription.
+    """
+
+    title = feedTitle[i].get_text()
+    description = feedDescription[i].get_text().split()
+    # We parse something like
+    # <description>Size: 4780 MB Seeds: 27 Peers: 17 Hash:
+    # a000000a00a0aaaa00aa0000a0aaa0a0000aa0aa </description>
+
+    size = description[1]
+    seeds = description[4]
+    peers = description[6]
+
+    print('%2i) %50s: Size: %5sMB Seeds: %3s Peers: %3s' %
+          (i,
+           title if len(title) < 50 else title[:50],
+           size,
+           bcolors.GREEN + seeds + bcolors.ENDC,
+           bcolors.WARNING + peers + bcolors.ENDC)
+          )
+
+
+def check_link(link):
+    """
+    Check if a link specified in argument isn't an error
+    """
+
+    page = urllib.urlopen(link).read()
+    soup = bs4.BeautifulSoup(page)
+
+    # Have to use class_ bevause it's a css class
+    return not(soup.find(class_='error'))
+
+
+def search_torrent(search, domain, check):
     torrentzPage = urllib.urlopen(domain + '?q=' + search).read()
     feed = bs4.BeautifulSoup(torrentzPage)
+    feedLink = feed.find_all('guid')
     feedTitle = feed.find_all('title')
     feedDescription = feed.find_all('description')
 
@@ -40,32 +78,27 @@ def search_torrent(search, domain):
     feedTitle.pop(0)
     feedDescription.pop(0)
 
-    item_num = len(feedTitle)
-
-    if item_num == 0:
+    if len(feedTitle) == 0:
         print("Sorry, no torrents found.")
-        if not option.no_verified:
-            print("Try: python " + ' '.join(sys.argv[:]) + ' -n')
+        # if not option.no_verified:
+        #     print("Try: python " + ' '.join(sys.argv[:]) + ' -n')
         sys.exit(0)
 
-    for i in range(item_num):
-        title = feedTitle[i].get_text()
-        description = feedDescription[i].get_text().split()
-        # We parse something like
-        # <description>Size: 4780 MB Seeds: 27 Peers: 17 Hash:
-        # a000000a00a0aaaa00aa0000a0aaa0a0000aa0aa </description>
+    if check:
+        i = 0
+        print('if')
+        while i < len(feedTitle):
+            if check_link(feedLink[i].get_text()):
+                print_torrent(i, feedTitle, feedDescription)
+                i += 1
+            else:
+                feedTitle.pop(i)
+                feedDescription.pop(i)
 
-        size = description[1]
-        seeds = description[4]
-        peers = description[6]
-
-        print('%2i) %50s: Size: %5sMB Seeds: %3s Peers: %3s' %
-              (i,
-               title if len(title) < 50 else title[:50],
-               size,
-               bcolors.GREEN + seeds + bcolors.ENDC,
-               bcolors.WARNING + peers + bcolors.ENDC)
-              )
+    else:
+        print('else')
+        for i in range(len(feedTitle)):
+            print_torrent(i, feedTitle, feedDescription)
 
     print("Which torrent to retrieve ? (or q to quit) : ")
     torrentNum = sys.stdin.readline()
@@ -74,14 +107,13 @@ def search_torrent(search, domain):
         print("Exiting the client.")
         sys.exit(0)
 
-    trackerIndex = feed.find_all('guid')[int(torrentNum)].get_text()
+    trackerIndex = feedLink[int(torrentNum)].get_text()
 
     # formatting for saved torrent filename
     title = feedTitle[int(torrentNum)].get_text()
     title = title.replace(' ', '_').replace('/', '_')
 
     return title, trackerIndex
-
 
 
 def save_file(toSave, outputPath):
@@ -118,7 +150,6 @@ def gethref(page, toFind):
     urls = soup.find_all('a')  # 'urls' contain a list of <a href=''>...</a>
 
     href = urls[0].get('href')
-
 
     match = False
     i = 0

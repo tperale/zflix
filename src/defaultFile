@@ -5,4 +5,4 @@
 player = vlc
 destdir = ~/Downloads
 not_verified = False
-
+check = False

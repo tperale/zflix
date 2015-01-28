@@ -6,7 +6,7 @@ import os
 import argparse
 import subprocess
 from configParser import parse_config
-from func import *
+from func import search_torrent, locationTesting
 
 
 class AppURLopener(urllib.FancyURLopener):
@@ -14,7 +14,6 @@ class AppURLopener(urllib.FancyURLopener):
         "AppleWebKit/532.0 (KHTML, like Gecko) Chrome/4.0.202.0 Safari/532.0"
 
 urllib._urlopener = AppURLopener()
-
 
 
 locations = {"h33t": {"url": "http://www.h33t.to",
@@ -35,8 +34,8 @@ locations = {"h33t": {"url": "http://www.h33t.to",
                                  "dl": "www.torrentfunk.com/tor/*.torrent"},
              "limetorrents.cc": {"url": "http://www.limetorrents.cc",
                                  "dl": "itorrents.org/torrent/"},
-#             "torrents.net": {"url": "http://www.torrents.net",
-#                              "dl": "torrents.net/down/*.torrent"},
+             # "torrents.net": {"url": "http://www.torrents.net",
+             #                  "dl": "torrents.net/down/*.torrent"},
              "vertor": {"url": "http://www.vertor.com",
                         "dl": "?mod=download."},
              "monova": {"url": "www.monova.org/torrent/",
@@ -54,7 +53,9 @@ locations = {"h33t": {"url": "http://www.h33t.to",
 
 
 def main(option, domain):
-    title,  trackerIndex = search_torrent(option.search.replace(' ', '+'), domain)
+    title,  trackerIndex = search_torrent(option.search.replace(' ', '+'),
+                                          domain,
+                                          option.check)
 
     print("GET %s" % trackerIndex)
 
@@ -71,7 +72,6 @@ def main(option, domain):
 
     while hit is False and hit is not None:
         hit = next(downloadLocationTest, None)
-
 
     # Launch peerflix
     if hit is not None:
@@ -94,22 +94,26 @@ if __name__ == "__main__":
                             default=config.get('general', 'not_verified'),
                             action='store_true',
                             help='Option to do unverified search')
-        parser.add_argument('-c', '--check', default=False, action='store_true',
-                            help=('Check link before to output them (slower). '
-                                + 'Some link are deprecated.'))
-        # TODO
+        parser.add_argument('-c', '--check',
+                            default=False,
+                            action='store_true',
+                            help=('Check link before to output them. This '
+                                  + 'function is heavily slower but some '
+                                  + 'torrent are often deleted so it may '
+                                  + 'be usefull.'))
         parser.add_argument('-nr', '--not_remove', default=False,
                             action='store_true',
                             help=("Don't erase the torrent you downloaded when "
-                                + "the stream is interrupted"))
+                                  + "the stream is interrupted"))
         # TODO
         parser.add_argument('-p', '--player',
                             default=config.get('general', 'player'),
                             type=str,
                             help=("Choose the player you want to use to watch"
-                                + " your streamed torrent"))
+                                  + " your streamed torrent"))
     except Exception as e:
-        print('Error parsing')
+        # Would happen if config file is lacking of argument
+        print('Error parsing in the config file.')
         print(e)
 
     else:
