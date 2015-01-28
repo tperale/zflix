@@ -30,5 +30,5 @@ It will output:
 - Add the possibility to download subtile.
 - Auto remove the torrent downloaded at the end of the stream.
 - Find a way to only output streamable movie/show from a search request on torrentz.
-- Some link in the feed, send you to 404'd pages.
+- Find a way to store bool  in the config file
 - If no torrent is found, do not launch peerflix
