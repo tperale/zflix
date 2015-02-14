@@ -9,12 +9,12 @@ import os
 # not_verified = [True, False]
 
 
-def create_default_file():
+def create_default_file(user):
     """
     Default config copy if files don't exist in your system
     """
     with open('defaultFile') as default:
-        f = open(os.path.expanduser('~/.zflixrc'))
+        f = open(user + '/.zflixrc', 'w')
         for line in default.readlines():
             f.write(line)
         f.close()
@@ -32,7 +32,7 @@ def parse_config():
             print('Trying to parse ~/.config/zflix/config')
             config.readfp(open(user + '/.config/zflix/config'))
         except IOError:
-            create_default_file()
+            create_default_file(user)
             config.readfp(open(user + '/.zflixrc'))
 
     return config
