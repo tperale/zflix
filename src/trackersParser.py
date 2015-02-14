@@ -39,11 +39,9 @@ def save_file(toSave, outputPath):
 
 class TrackersPage:
     def __init__(self, url):
-        print(url)
         self.page = urllib.urlopen(url).read()
-        soup = bs4.BeautifulSoup(self.page)
-        self.trackersUrls = soup.find_all(class_="download")
-        print(self.trackersUrls)
+        soup = bs4.BeautifulSoup(self.page, 'html.parser')
+        self.trackersUrls = soup.find_all('a')
         # 'trackerUrls' contain a list of <a href=''>...</a>
 
         self.torrentFile = None
@@ -56,9 +54,9 @@ class TrackersPage:
                           "seedpeer.eu": {"url": "www.seedpeer.eu/",
                                           "dl": "/download/"},
                           "rarbg": {"url": "rarbg.com/torrent/",
-                                    "dl": "https://rarbg.com/download.php?id="},
-                          "tpb": {"url": "http://thepiratebay.org",
-                                  "dl": "http://torrents.thepiratebay.org"},
+                                    "dl": "rarbg.com/download.php?id="},
+                          #"tpb": {"url": "http://thepiratebay.org",
+                          #        "dl": "http://torrents.thepiratebay.org"},
                           "yourbittorrent": {"url": "yourbittorent.com/torrent/",
                                              "dl": "/down/*.torrent"},
                           "isohunt": {"url": "http://isohunt.to",
@@ -97,7 +95,6 @@ class TrackersPage:
 
         while not(match) and i < len(urlsList):
             href = urlsList[i].get('href')
-            print(href)
 
             if href is not None:
                 j = 0

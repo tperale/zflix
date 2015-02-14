@@ -30,7 +30,7 @@ def main(option, torrentz):
         # Launch peerflix
         command = 'peerflix %s --%s' % (outputPath, option.player)
         print(command)
-        subprocess.Popen(command).split()
+        subprocess.Popen(command, shell=True).split()
 
 
 if __name__ == "__main__":
