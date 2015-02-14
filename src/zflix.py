@@ -6,7 +6,8 @@ import os
 import argparse
 import subprocess
 from configParser import parse_config
-from func import search_torrent, locationTesting
+from trackersParser import TrackersPage, save_file
+from torrentSearch import Torrentz
 
 
 class AppURLopener(urllib.FancyURLopener):
@@ -16,67 +17,20 @@ class AppURLopener(urllib.FancyURLopener):
 urllib._urlopener = AppURLopener()
 
 
-locations = {"h33t": {"url": "http://www.h33t.to",
-                      "dl": "h33t.to/get/"},
-             "demonoid": {"url": "www.demonoid.pw",
-                          "dl": "www.demonoid.pw/files/download/"},
-             "seedpeer.eu": {"url": "www.seedpeer.eu/",
-                             "dl": "www.seedpeer.eu/download/"},
-             "rarbg": {"url": "rarbg.com/torrent/",
-                       "dl": "https://rarbg.com/download.php?id="},
-             "tpb": {"url": "http://thepiratebay.org",
-                     "dl": "http://torrents.thepiratebay.org"},
-             "yourbittorrent": {"url": "yourbittorent.com/torrent/",
-                                "dl": "yourbittorrent.com/down/*.torrent"},
-             "isohunt": {"url": "http://isohunt.to",
-                         "dl": "torrent.isohunt.to/download.php?id="},
-             "torrentfunk.com": {"url": "http://www.torrentfunk.com",
-                                 "dl": "www.torrentfunk.com/tor/*.torrent"},
-             "limetorrents.cc": {"url": "http://www.limetorrents.cc",
-                                 "dl": "itorrents.org/torrent/"},
-             # "torrents.net": {"url": "http://www.torrents.net",
-             #                  "dl": "torrents.net/down/*.torrent"},
-             "vertor": {"url": "http://www.vertor.com",
-                        "dl": "?mod=download."},
-             "monova": {"url": "www.monova.org/torrent/",
-                        "dl": "www.monova.org/download/torrent/*.torrent"},
-             "torlock": {"url": "www.torlock.com",
-                         "dl": ".torrent"},
-             "torrentproject": {"url": "torrentproject.se",
-                                "dl": "torrentproject.se/torrent/*.torrent"}
+def main(option, torrentz):
+    torrentz.search_torrent(option.search.replace(' ', '+'), option.check)
 
-             }
-
-# TODO
-# torrentproject, torrentreactor use an other page to the download
-# bitsnoop, tpb, kat are blocked
-
-
-def main(option, domain):
-    title,  trackerIndex = search_torrent(option.search.replace(' ', '+'),
-                                          domain,
-                                          option.check)
-
-    print("GET %s" % trackerIndex)
-
-    trackers = urllib.urlopen(trackerIndex).read()
+    trackersPage = TrackersPage(torrentz.trackerIndex)
     # trackers var contain the source of the torrentz selectioned torrent page
 
-    outputPath = option.destdir + '/' + title + '.torrent'
+    if trackersPage.torrentFile:
+        outputPath = option.destdir + '/' + torrentz.torrentTitle + '.torrent'
+        save_file(trackersPage.torrentFile, outputPath)
 
-    hit = False
-    downloadLocationTest = locationTesting(trackers,
-                                           outputPath,
-                                           title,
-                                           locations)
-
-    while hit is False and hit is not None:
-        hit = next(downloadLocationTest, None)
-
-    # Launch peerflix
-    if hit is not None:
-        subprocess.Popen(('peerflix %s --%s' %
-                          (outputPath, option.player)).split())
+        # Launch peerflix
+        command = 'peerflix %s --%s' % (outputPath, option.player)
+        print(command)
+        subprocess.Popen(command).split()
 
 
 if __name__ == "__main__":
@@ -91,11 +45,12 @@ if __name__ == "__main__":
                             type=str,
                             help='Destination of the downloaded torrent')
         parser.add_argument('-n', '--not_verified',
-                            default=config.get('general', 'not_verified'),
+                            default=config.getboolean('general',
+                                                      'not_verified'),
                             action='store_true',
                             help='Option to do unverified search')
         parser.add_argument('-c', '--check',
-                            default=False,
+                            default=config.getboolean('general', 'check'),
                             action='store_true',
                             help=('Check link before to output them. This '
                                   + 'function is heavily slower but some '
@@ -111,19 +66,15 @@ if __name__ == "__main__":
                             type=str,
                             help=("Choose the player you want to use to watch"
                                   + " your streamed torrent"))
+        option = parser.parse_args()
     except Exception as e:
         # Would happen if config file is lacking of argument
         print('Error parsing in the config file.')
         print(e)
 
     else:
-        option = parser.parse_args()
-
-        if option.not_verified:
-            domain += '/feedP'
-        else:
-            domain += '/feed_verifiedP'
+        site = Torrentz(option.not_verified)
 
         option.destdir = os.path.expanduser(option.destdir)
 
-        main(option, domain)
+        main(option, site)
