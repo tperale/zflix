@@ -51,7 +51,8 @@ class Torrentz:
             # <description>Size: 4780 MB Seeds: 27 Peers: 17 Hash:
             # a000000a00a0aaaa00aa0000a0aaa0a0000aa0aa </description>
             newEntry['size'] = description[1]
-            newEntry['seeds'] = description[4]
-            newEntry['peers'] = description[6]
+            # Don't need to be converted in an int.
+            newEntry['seeds'] = int(description[4])
+            newEntry['peers'] = int(description[6])
 
             queryResult[self].append(newEntry)
