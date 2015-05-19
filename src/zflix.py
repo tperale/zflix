@@ -35,6 +35,25 @@ class bcolors:
         self.ENDC = ''
         self.BOLD = ''
 
+def save_file(toSave, outputPath):
+    """
+    Save a webpage in a specified file
+    """
+    try:
+        print('Writting')
+        with open(outputPath, "w") as openedFile:
+            openedFile.write(toSave)
+
+        print("Torrent Saved: %s" % (outputPath))
+
+        res = True
+
+    except Exception as e:
+        res = False
+        print(e)
+
+    return res
+
 
 def main(option):
     # trackers = json.load('trackers.json')
@@ -79,7 +98,7 @@ def main(option):
         pageLink = outputList[torrentNum]
         download = pageLink['ref'].download(pageLink['link'])
         if download:
-            outputPath = option.destdir + '/' + torrentz.torrentTitle + '.torrent'
+            outputPath = option.destdir + '/' + pageLink['title'] + '.torrent'
             save_file(trackersPage.torrentFile, outputPath)
 
             # Launch peerflix
