@@ -22,8 +22,8 @@ class Torrentz:
 
     def search_torrent(self, search, queryResult):
         """
-        Add to the dic "queryResult" with the key "torrentz" a list of returned
-        torrent link with a specific search term.
+        Add to the dic "queryResult" with a refernce used for the key
+        a list of returned torrent link with a specific search term.
         ARGUMENTS:
             search: The user searcher torrents.
             queryResult: A dict proxy where the result will be stocked.
@@ -38,7 +38,7 @@ class Torrentz:
         feedDescription.pop(0) # useless info
 
         if len(feedTitle) == 0:
-            queryResult['torrentz'] = None
+            queryResult[self] = None
             return
 
         for i in range(len(feedTitle)):
@@ -54,4 +54,4 @@ class Torrentz:
             newEntry['seeds'] = description[4]
             newEntry['peers'] = description[6]
 
-            queryResult['torrentz'].append(newEntry)
+            queryResult[self].append(newEntry)
