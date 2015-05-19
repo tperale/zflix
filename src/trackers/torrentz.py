@@ -1,5 +1,10 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import urllib
 import bs4
+import os
+import sys
 
 
 class AppURLopener(urllib.FancyURLopener):
@@ -10,12 +15,12 @@ urllib._urlopener = AppURLopener()
 
 
 class Torrentz:
-    def __init__(self, not_verified):
+    def __init__(self):
         self.domain = 'https://www.torrentz.com'
-        if not_verified:
-            self.domain += '/feedP'
-        else:
-            self.domain += '/feed_verifiedP'
+        #if not_verified:
+        self.domain += '/feedP'
+        #else:
+        #    self.domain += '/feed_verifiedP'
 
         self.trackerIndex = None
         self.torrentTitle = None
@@ -93,16 +98,20 @@ class Torrentz:
 
         return res
 
-    def location_testing(self):  # ,  outputPath, title):
+    def location_testing(self, pageLink):
         """
         Each download locations specified in the dict 'locations' is tested
         and the result is yielded (False if it didn't worked, else True)
         """
+        page = urllib.urlopen(pageLink).read()
+        soup = bs4.BeautifulSoup(page, 'html.parser')
+        trackersUrls = soup.find_all('a')  # Every trackers listed in the page
+
         for name in self.locations:
             res = False
             os.write(sys.stdout.fileno(), "trying %s... \n" % name)
 
-            res = self.get_page(self.trackersUrls, self.locations[name]['url'])
+            res = self.get_page(trackersUrls, self.locations[name]['url'])
             # If find Tracker specific page
             if res is not False:
                 soup = bs4.BeautifulSoup(res)
@@ -114,8 +123,8 @@ class Torrentz:
 
         print("Error: Torrent found in none of the locations")
 
-    def download(self):
-        downloadLocationTest = self.location_testing()
+    def download(self, pageLink):
+        downloadLocationTest = self.location_testing(pageLink)
         hit = False
         while hit is False and hit is not None:
             hit = next(downloadLocationTest, None)
@@ -143,6 +152,7 @@ class Torrentz:
             queryResult[self] = None
             return
 
+        queryResult[self] = []
         for i in range(len(feedTitle)):
             newEntry = {}
             newEntry['title'] = feedTitle[i].get_text()
@@ -159,6 +169,3 @@ class Torrentz:
             newEntry['ref'] = self
 
             queryResult[self].append(newEntry)
-
-
-
