@@ -10,12 +10,12 @@ urllib._urlopener = AppURLopener()
 
 
 class Torrentz:
-    def __init__(self, not_verified):
+    def __init__(self):
         self.domain = 'https://www.torrentz.com'
-        if not_verified:
-            self.domain += '/feedP'
-        else:
-            self.domain += '/feed_verifiedP'
+        #if not_verified:
+        self.domain += '/feedP'
+        #else:
+        #    self.domain += '/feed_verifiedP'
 
         self.trackerIndex = None
         self.torrentTitle = None
@@ -143,6 +143,7 @@ class Torrentz:
             queryResult[self] = None
             return
 
+        queryResult[self] = []
         for i in range(len(feedTitle)):
             newEntry = {}
             newEntry['title'] = feedTitle[i].get_text()
@@ -159,6 +160,3 @@ class Torrentz:
             newEntry['ref'] = self
 
             queryResult[self].append(newEntry)
-
-
-
