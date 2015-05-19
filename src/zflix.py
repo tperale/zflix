@@ -6,9 +6,6 @@ import os
 import argparse
 import subprocess
 from configParser import parse_config
-from trackersParser import TrackersPage, save_file
-from torrentSearch import Torrentz
-
 import json
 
 
@@ -39,59 +36,30 @@ class bcolors:
         self.BOLD = ''
 
 
-def print_torrent(self, i, feedTitle, feedDescription):
-    """
-    Output the torrent name and some description for the torrent
-    on position i from feedTitle and feedDescription.
-    """
-
-    title = feedTitle[i].get_text()
-    description = feedDescription[i].get_text().split()
-    # We parse something like
-    # <description>Size: 4780 MB Seeds: 27 Peers: 17 Hash:
-    # a000000a00a0aaaa00aa0000a0aaa0a0000aa0aa </description>
-
-    size = description[1]
-    seeds = description[4]
-    peers = description[6]
-
-    print('%2i) %50s: Size: %5sMB Seeds: %3s Peers: %3s' %
-            (i,
-            title if len(title) < 50 else title[:50],
-            size,
-            bcolors.GREEN + seeds + bcolors.ENDC,
-            bcolors.WARNING + peers + bcolors.ENDC)
-            )
-
-
-def main(option, torrentz):
-    torrentz.search_torrent(option.search.replace(' ', '+'), option.check)
+def main(option):
     # trackers = json.load('trackers.json')
     # for tacker in trackers:
     # Should find a way to import all of the trackers
     from trackers.torrentz import Torrentz
-    from multiproccessing import Process, Manager
+    from multiprocessing import Process, Manager
 
     trackers = [Torrentz]
-
 
     queryResult = {}
 
     for tracker in trackers:
-        process = Process(target=tracker.search_torrent,
-                          args=(option.search, queryResult, ))
-        process.start()
+        #process = Process(target=tracker.search_torrent,
+        #                  args=(option.search, queryResult, ))
+        #process.start()
+        tracker().search_torrent(option.search, queryResult)
 
-
-    trackersPage = TrackersPage(torrentz.trackerIndex)
-    # trackers var contain the source of the torrentz selectioned torrent page
 
     outputList = []
 
-    outputNum = 100 # TODO DELETE.
+    outputNum = 10 # TODO DELETE.
     for i in range(outputNum):
         # Creating the torrent selection output.
-        output = max(queryResult, key=lambda x: queryResult[x][0]['seed'])
+        output = max(queryResult, key=lambda x: queryResult[x][0]['seeds'])
         output = queryResult[output].pop(0)
         outputList.append(output)
 
@@ -99,16 +67,17 @@ def main(option, torrentz):
               (i,
                output['title'] if len(output['title']) < 50 else output['title'][:50],
                output['size'],
-               bcolors.GREEN + output['seeds'] + bcolors.ENDC,
-               bcolors.WARNING + output['peers'] + bcolors.ENDC
+               bcolors.GREEN + str(output['seeds']) + bcolors.ENDC,
+               bcolors.WARNING + str(output['peers']) + bcolors.ENDC
                )
               )
 
 
     torrentNum = input('Enter the torrent number you want to get. ')
 
-    if torrentSelection != 'q' and torrentSelection != 'Q':
-        download = outputList[torrentNum].download()
+    if torrentNum != 'q' and torrentNum != 'Q':
+        pageLink = outputList[torrentNum]
+        download = pageLink['ref'].download(pageLink['link'])
         if download:
             outputPath = option.destdir + '/' + torrentz.torrentTitle + '.torrent'
             save_file(trackersPage.torrentFile, outputPath)
@@ -158,8 +127,5 @@ if __name__ == "__main__":
         print(e)
 
     else:
-        site = Torrentz(option.not_verified)
-
         option.destdir = os.path.expanduser(option.destdir)
-
-        main(option, site)
+        main(option)
