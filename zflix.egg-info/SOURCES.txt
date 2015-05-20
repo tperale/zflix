@@ -1,0 +1,10 @@
+setup.py
+src/configParser.py
+src/torrentSearch.py
+src/trackersParser.py
+src/zflix.py
+zflix.egg-info/PKG-INFO
+zflix.egg-info/SOURCES.txt
+zflix.egg-info/dependency_links.txt
+zflix.egg-info/requires.txt
+zflix.egg-info/top_level.txt
