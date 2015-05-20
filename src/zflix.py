@@ -15,6 +15,7 @@ class AppURLopener(urllib.FancyURLopener):
 
 urllib._urlopener = AppURLopener()
 
+
 class bcolors:
     HEADER = '\033[95m'
     BLUE = '\033[94m'
@@ -34,6 +35,7 @@ class bcolors:
         self.FAIL = ''
         self.ENDC = ''
         self.BOLD = ''
+
 
 def save_file(toSave, outputPath):
     """
@@ -59,7 +61,7 @@ def main(option):
     # trackers = json.load('trackers.json')
     # TODO Should find a way to import all of the trackers
     from trackers.torrentz import Torrentz
-    from multiprocessing import Process, Manager
+    # from multiprocessing import Process, Manager
 
     trackers = [Torrentz]
 
@@ -104,7 +106,7 @@ def main(option):
     pageLink = outputList[torrentNum]
     if option.no_magnet:
         # Download and save the torrent.
-        download = pageLink['ref'].download(pageLink['link'])
+        download = pageLink['ref'].get_torrent(pageLink['link'])
         torrentToStream = option.destdir + '/' + pageLink['title'] + '.torrent'
         save_file(download, torrentToStream)
 
@@ -139,31 +141,6 @@ if __name__ == "__main__":
                             )
         # This option will call the get_magnet option of a tracker.
         # instead of the .download one.
-
-        #parser.add_argument('-n', '--not_verified',
-        #                    default=config.getboolean('general',
-        #                                              'not_verified'),
-        #                    action='store_true',
-        #                    help='Option to do unverified search'
-        #                    )
-        # Deprecated with the new way to arrange data.
-
-        #parser.add_argument('-c', '--check',
-        #                    default=config.getboolean('general', 'check'),
-        #                    action='store_true',
-        #                    help=('Check link before to output them. This '
-        #                          + 'function is heavily slower but some '
-        #                          + 'torrent are often deleted so it may '
-        #                          + 'be usefull.')
-        #                    )
-        # Deprecated
-
-        #parser.add_argument('-nr', '--not_remove', default=False,
-        #                    action='store_true',
-        #                    help=("Don't erase the torrent you downloaded when "
-        #                          + "the stream is interrupted")
-        #                    )
-        # Can be deprecated with the --magnet option
 
         parser.add_argument('-p', '--player',
                             default=config.get('general', 'player'),

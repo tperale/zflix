@@ -133,7 +133,7 @@ class Torrentz:
 
         print("Error: Torrent found in none of the locations")
 
-    def download(self, pageLink):
+    def get_torrent(self, pageLink):
         downloadLocationTest = self.location_testing(pageLink)
         hit = False
         while hit is False and hit is not None:
