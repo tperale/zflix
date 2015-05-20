@@ -57,13 +57,17 @@ class Torrentz:
                           #                   "dl": "torrentproject.se/torrent/*.torrent"}
                           }
 
-    def gethref(self, urlsList, toFind):
+    def get_href(self, urlsList, toFind):
         """
-        Seek the link 'toFind' in the whole page 'page' et return
+        Seek the link 'toFind' in the whole page 'page' and return
         the exact destination you're looking for.
 
-        toFind: Url of the page to find splitted in a list
-        page: Source code of the page where you want to find 'toFind'
+        ARGUMENTS:
+            toFind: Url of the page to find splitted in a list
+            page: Source code of the page where you want to find 'toFind'
+
+        RETURN VALUE:
+            The destination you're looking for.
         """
         match = False
         i = 0
@@ -85,9 +89,16 @@ class Torrentz:
 
     def get_page(self, urlsList, researchedUrl):
         """
-        Get the page source of a spécified url (it can be a part of that url)
+        Get the page of the researchedUrl.
+
+        ARGUMENTS:
+            urlsList: List of link in the page.
+            researchedUrl: Researched url trough the urlsList
+
+        RETURN VALUE:
+            The page of the searched url or a False if the url is not found.
         """
-        pageUrl = self.gethref(urlsList, researchedUrl.split('*'))
+        pageUrl = self.get_href(urlsList, researchedUrl.split('*'))
         if pageUrl:
             # If gethref() found the correct url
             print('Entering: %s' % (pageUrl))
@@ -99,47 +110,92 @@ class Torrentz:
 
         return res
 
-    def location_testing(self, pageLink, magnet=False):
+    def get_torrent_from_tracker(self, trackerPage, trackerName):
         """
-        Each download locations specified in the dict 'locations' is tested
-        and the result is yielded (False if it didn't worked, else True)
+        Get a magnet link on a webpage
+
+        ARGUMENTS:
+            trackerPage: A link to a tracker.
+            trackerName: The name of that tracker, used to find the format
+                of a download link for a torrent.
+
+        RETURN VALUE:
+            A .torrent file.
+        """
+        # If find Tracker specific page
+        soup = bs4.BeautifulSoup(trackerPage)
+        urls = soup.find_all('a')
+        # Looking for the download link
+        return self.get_page(urls, self.locations[trackerName]['dl'])
+
+    def get_magnet_from_tracker(self, trackerPage):
+        """
+        Get a magnet link on a webpage
+
+        ARGUMENT:
+            trackerPage: A link to a tracker.
+
+        RETURN VALUE:
+            A magnet link.
+
+        NB:
+            It work like self.get_href but more simple.
+        """
+        soup = bs4.BeautifulSoup(trackerPage)
+        urls = soup.find_all('a')
+
+        i = 0
+        res = False
+        while res is False:
+            if 'magnet:' in urls[i].get('href'):
+                print('Getting ' + urls[i].get('href'))
+                res = urls[i].get('href')
+            i += 1
+
+        return res
+
+    def get_specific_tracker(self, pageLink):
+        """
+        Get the a supported tracker from a torrentz page.
+
+        ARGUMENT:
+            pageLink: A torrentz download page.
+
+        RETURN VALUE:
+            The page of a supported tracker, and the name of the tracker.
         """
         page = urllib.urlopen(pageLink).read()
         soup = bs4.BeautifulSoup(page, 'html.parser')
         trackersUrls = soup.find_all('a')  # Every trackers listed in the page
 
         for name in self.locations:
-            res = False
             os.write(sys.stdout.fileno(), "trying %s... \n" % name)
 
-            res = self.get_page(trackersUrls, self.locations[name]['url'])
-            # If find Tracker specific page
-            if res is not False:
-                soup = bs4.BeautifulSoup(res)
-                urls = soup.find_all('a')
-                # Looking for the download link
-                if magnet:
-                    i = 0
-                    res = False
-                    while i < len(urls) and res is False:
-                        if 'magnet:' in urls[i].get('href'):
-                            print('Getting ' + urls[i].get('href'))
-                            res = urls[i].get('href')
-                        i += 1
-                else:
-                    res = self.get_page(urls, self.locations[name]['dl'])
-
-            yield res
+            trackersPage = self.get_page(trackersUrls,
+                                         self.locations[name]['url']
+                                         )
+            if trackersPage:
+                yield trackersPage, name
 
         print("Error: Torrent found in none of the locations")
 
     def get_torrent(self, pageLink):
-        downloadLocationTest = self.location_testing(pageLink)
-        hit = False
-        while hit is False and hit is not None:
-            hit = next(downloadLocationTest, None)
+        """
+        Function returning the .torrent file to save into a user specified
+        directory.
 
-        return hit
+        ARGUMENT:
+            pageLink: The link of the page you want to get the torrent.
+
+        RETURN VALUE:
+            The .torrent file.
+        """
+        trackerFind = self.get_specific_tracker(pageLink)
+        trackerPage = False
+        while trackerPage is False:
+            trackerPage, trackerName = next(trackerFind, (None, None))
+
+        return self.get_torrent_from_tracker(trackerPage, trackerName)
 
     def get_magnet(self, pageLink):
         downloadLocationTest = self.location_testing(pageLink, magnet=True)
@@ -153,6 +209,7 @@ class Torrentz:
         """
         Add to the dic "queryResult" with a refernce used for the key
         a list of returned torrent link with a specific search term.
+
         ARGUMENTS:
             search: The user searcher torrents.
             queryResult: A dict proxy where the result will be stocked.
