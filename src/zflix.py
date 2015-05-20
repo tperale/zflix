@@ -57,8 +57,7 @@ def save_file(toSave, outputPath):
 
 def main(option):
     # trackers = json.load('trackers.json')
-    # for tacker in trackers:
-    # Should find a way to import all of the trackers
+    # TODO Should find a way to import all of the trackers
     from trackers.torrentz import Torrentz
     from multiprocessing import Process, Manager
 
@@ -72,25 +71,28 @@ def main(option):
         #process.start()
         tracker().search_torrent(option.search, queryResult)
 
-
     outputList = []
 
-    outputNum = 10 # TODO DELETE.
-    for i in range(outputNum):
+    print(queryResult)
+
+    i = 0
+    while i < option.number_of_output and \
+            max(map(lambda x, y=queryResult: len(y[x]), queryResult)):
         # Creating the torrent selection output.
-        output = max(queryResult, key=lambda x: queryResult[x][0]['seeds'])
-        output = queryResult[output].pop(0)
-        outputList.append(output)
+        # while there is torrent to display.
+        maxSeeds = max(map(lambda x: queryResult[x][0]['seeds'], queryResult))
+        out = queryResult[maxSeeds].pop(0)
+        outputList.append(out)
 
         print('%2i) %50s: Size: %5sMB Seeds: %3s Peers: %3s' %
               (i,
-               output['title'] if len(output['title']) < 50 else output['title'][:50],
-               output['size'],
-               bcolors.GREEN + str(output['seeds']) + bcolors.ENDC,
-               bcolors.WARNING + str(output['peers']) + bcolors.ENDC
+               out['title'] if len(out['title']) < 50 else out['title'][:50],
+               out['size'],
+               bcolors.GREEN + str(out['seeds']) + bcolors.ENDC,
+               bcolors.WARNING + str(out['peers']) + bcolors.ENDC
                )
               )
-
+        i += 1
 
     torrentNum = input('Enter the torrent number you want to get. ')
 
@@ -99,10 +101,10 @@ def main(option):
         download = pageLink['ref'].download(pageLink['link'])
         if download:
             outputPath = option.destdir + '/' + pageLink['title'] + '.torrent'
-            save_file(trackersPage.torrentFile, outputPath)
+            save_file(download, outputPath)
 
             # Launch peerflix
-            command = 'peerflix %s --%s' % (outputPath, option.player)
+            command = "peerflix '%s' --%s" % (outputPath, option.player)
             subprocess.Popen(command, shell=True)
 
 
@@ -139,9 +141,18 @@ if __name__ == "__main__":
                             type=str,
                             help=("Choose the player you want to use to watch"
                                   + " your streamed torrent"))
+
+        parser.add_argument('-no', '--number_of_output',
+                            default=config.get('general', 'number_of_output'),
+                            type=int,
+                            help=("Number of torrent displayed with your search.")
+                            )
+
         option = parser.parse_args()
     except Exception as e:
         # Would happen if config file is lacking of argument
+        # TODO if an option is not in the config file add the line needed with
+        # TODO default value.
         print('Error parsing in the config file.')
         print(e)
 
