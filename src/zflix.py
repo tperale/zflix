@@ -69,16 +69,17 @@ def main(option):
         #process = Process(target=tracker.search_torrent,
         #                  args=(option.search, queryResult, ))
         #process.start()
+        # TODO launch torrent in processes
         tracker().search_torrent(option.search, queryResult)
 
     outputList = []
 
-    print(queryResult)
 
+    # CREATING the torrent selection output.
+    # for a number of torrent the user specified in the option.
     i = 0
     while i < option.number_of_output and \
             max(map(lambda x, y=queryResult: len(y[x]), queryResult)):
-        # Creating the torrent selection output.
         # while there is torrent to display.
         maxSeeds = max(map(lambda x: queryResult[x][0]['seeds'], queryResult))
         out = queryResult[maxSeeds].pop(0)
@@ -94,18 +95,28 @@ def main(option):
               )
         i += 1
 
+    # ASKING the user wich torrent he want to retrive.
     torrentNum = input('Enter the torrent number you want to get. ')
 
-    if torrentNum != 'q' and torrentNum != 'Q':
-        pageLink = outputList[torrentNum]
-        download = pageLink['ref'].download(pageLink['link'])
-        if download:
-            outputPath = option.destdir + '/' + pageLink['title'] + '.torrent'
-            save_file(download, outputPath)
+    if torrentNum == 'q' or torrentNum == 'Q' or torrentNum < len(outputList):
+        exit()
 
-            # Launch peerflix
-            command = "peerflix '%s' --%s" % (outputPath, option.player)
-            subprocess.Popen(command, shell=True)
+    pageLink = outputList[torrentNum]
+    if option.magnet:
+        # Download and save the torrent.
+        download = pageLink['ref'].download(pageLink['link'])
+        torrentToStream = option.destdir + '/' + pageLink['title'] + '.torrent'
+        save_file(download, torrentToStream)
+
+    else:
+        # Use magne link to save the torrent.
+        pass  # TODO
+
+    # Launch peerflix
+    command = "peerflix '%s' --%s --path %s"\
+        % (torrentToStream, option.player, option.destdir)
+
+    subprocess.Popen(command, shell=True)
 
 
 if __name__ == "__main__":
@@ -118,29 +129,49 @@ if __name__ == "__main__":
         parser.add_argument('-d', '--destdir',
                             default=config.get('general', 'destdir'),
                             type=str,
-                            help='Destination of the downloaded torrent')
-        parser.add_argument('-n', '--not_verified',
-                            default=config.getboolean('general',
-                                                      'not_verified'),
+                            help='Destination of the downloaded torrent'
+                            )
+
+        parser.add_argument('-m', '--no_magnet',
+                            default=config.getboolean('general', 'no_magnet'),
                             action='store_true',
-                            help='Option to do unverified search')
-        parser.add_argument('-c', '--check',
-                            default=config.getboolean('general', 'check'),
-                            action='store_true',
-                            help=('Check link before to output them. This '
-                                  + 'function is heavily slower but some '
-                                  + 'torrent are often deleted so it may '
-                                  + 'be usefull.'))
-        parser.add_argument('-nr', '--not_remove', default=False,
-                            action='store_true',
-                            help=("Don't erase the torrent you downloaded when "
-                                  + "the stream is interrupted"))
-        # TODO
+                            type=bool,
+                            help=("Use magnet link (no torrent download.")
+                            )
+        # This option will call the get_magnet option of a tracker.
+        # instead of the .download one.
+
+        #parser.add_argument('-n', '--not_verified',
+        #                    default=config.getboolean('general',
+        #                                              'not_verified'),
+        #                    action='store_true',
+        #                    help='Option to do unverified search'
+        #                    )
+        # Deprecated with the new way to arrange data.
+
+        #parser.add_argument('-c', '--check',
+        #                    default=config.getboolean('general', 'check'),
+        #                    action='store_true',
+        #                    help=('Check link before to output them. This '
+        #                          + 'function is heavily slower but some '
+        #                          + 'torrent are often deleted so it may '
+        #                          + 'be usefull.')
+        #                    )
+        # Deprecated
+
+        #parser.add_argument('-nr', '--not_remove', default=False,
+        #                    action='store_true',
+        #                    help=("Don't erase the torrent you downloaded when "
+        #                          + "the stream is interrupted")
+        #                    )
+        # Can be deprecated with the --magnet option
+
         parser.add_argument('-p', '--player',
                             default=config.get('general', 'player'),
                             type=str,
                             help=("Choose the player you want to use to watch"
-                                  + " your streamed torrent"))
+                                  + " your streamed torrent")
+                            )
 
         parser.add_argument('-no', '--number_of_output',
                             default=config.get('general', 'number_of_output'),
