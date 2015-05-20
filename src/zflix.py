@@ -81,7 +81,7 @@ def main(option):
     while i < option.number_of_output and \
             max(map(lambda x, y=queryResult: len(y[x]), queryResult)):
         # while there is torrent to display.
-        maxSeeds = max(map(lambda x: queryResult[x][0]['seeds'], queryResult))
+        maxSeeds = max(queryResult, key=lambda x: queryResult[x][0]['seeds'])
         out = queryResult[maxSeeds].pop(0)
         outputList.append(out)
 
@@ -98,11 +98,11 @@ def main(option):
     # ASKING the user wich torrent he want to retrive.
     torrentNum = input('Enter the torrent number you want to get. ')
 
-    if torrentNum == 'q' or torrentNum == 'Q' or torrentNum < len(outputList):
+    if torrentNum == 'q' or torrentNum == 'Q' or (torrentNum > len(outputList)):
         exit()
 
     pageLink = outputList[torrentNum]
-    if option.magnet:
+    if option.no_magnet:
         # Download and save the torrent.
         download = pageLink['ref'].download(pageLink['link'])
         torrentToStream = option.destdir + '/' + pageLink['title'] + '.torrent'
@@ -110,7 +110,7 @@ def main(option):
 
     else:
         # Use magne link to save the torrent.
-        pass  # TODO
+        torrentToStram = pageLink['ref'].get_magnet(pageLink['link'])
 
     # Launch peerflix
     command = "peerflix '%s' --%s --path %s"\
@@ -135,7 +135,6 @@ if __name__ == "__main__":
         parser.add_argument('-m', '--no_magnet',
                             default=config.getboolean('general', 'no_magnet'),
                             action='store_true',
-                            type=bool,
                             help=("Use magnet link (no torrent download.")
                             )
         # This option will call the get_magnet option of a tracker.
