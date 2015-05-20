@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# Find a better filename
-
 import urllib
 import bs4
 import os
@@ -16,36 +14,16 @@ class AppURLopener(urllib.FancyURLopener):
 urllib._urlopener = AppURLopener()
 
 
-def save_file(toSave, outputPath):
-    """
-    Save a webpage in a specified file
-    """
+class Torrentz:
+    def __init__(self):
+        self.domain = 'https://www.torrentz.com'
+        #if not_verified:
+        self.domain += '/feedP'
+        #else:
+        #    self.domain += '/feed_verifiedP'
 
-    try:
-        print('Writting')
-        with open(outputPath, "w") as openedFile:
-            openedFile.write(toSave)
-
-        print("Torrent Saved: %s" % (outputPath))
-
-        res = True
-
-    except Exception as e:
-        res = False
-        print(e)
-
-    return res
-
-
-class TrackersPage:
-    def __init__(self, url):
-        self.page = urllib.urlopen(url).read()
-        soup = bs4.BeautifulSoup(self.page, 'html.parser')
-        self.trackersUrls = soup.find_all('a')
-        # 'trackerUrls' contain a list of <a href=''>...</a>
-
-        self.torrentFile = None
-
+        self.trackerIndex = None
+        self.torrentTitle = None
 
         self.locations = {"h33t": {"url": "http://www.h33t.to",
                                    "dl": "h33t.to/get/"},
@@ -79,8 +57,6 @@ class TrackersPage:
                           #                   "dl": "torrentproject.se/torrent/*.torrent"}
                           }
 
-        self.send_locations()
-
     def gethref(self, urlsList, toFind):
         """
         Seek the link 'toFind' in the whole page 'page' et return
@@ -89,7 +65,6 @@ class TrackersPage:
         toFind: Url of the page to find splitted in a list
         page: Source code of the page where you want to find 'toFind'
         """
-
         match = False
         i = 0
 
@@ -110,8 +85,8 @@ class TrackersPage:
 
     def get_page(self, urlsList, researchedUrl):
         """
+        Get the page source of a spécified url (it can be a part of that url)
         """
-
         pageUrl = self.gethref(urlsList, researchedUrl.split('*'))
         if pageUrl:
             # If gethref() found the correct url
@@ -124,32 +99,91 @@ class TrackersPage:
 
         return res
 
-    def location_testing(self):  # ,  outputPath, title):
+    def location_testing(self, pageLink, magnet=False):
         """
         Each download locations specified in the dict 'locations' is tested
         and the result is yielded (False if it didn't worked, else True)
         """
+        page = urllib.urlopen(pageLink).read()
+        soup = bs4.BeautifulSoup(page, 'html.parser')
+        trackersUrls = soup.find_all('a')  # Every trackers listed in the page
 
         for name in self.locations:
             res = False
             os.write(sys.stdout.fileno(), "trying %s... \n" % name)
 
-            res = self.get_page(self.trackersUrls, self.locations[name]['url'])
+            res = self.get_page(trackersUrls, self.locations[name]['url'])
             # If find Tracker specific page
             if res is not False:
                 soup = bs4.BeautifulSoup(res)
                 urls = soup.find_all('a')
                 # Looking for the download link
-                res = self.get_page(urls, self.locations[name]['dl'])
+                if magnet:
+                    i = 0
+                    res = False
+                    while i < len(urls) and res is False:
+                        if 'magnet:' in urls[i].get('href'):
+                            print('Getting ' + urls[i].get('href'))
+                            res = urls[i].get('href')
+                        i += 1
+                else:
+                    res = self.get_page(urls, self.locations[name]['dl'])
 
             yield res
 
         print("Error: Torrent found in none of the locations")
 
-    def send_locations(self):
-        downloadLocationTest = self.location_testing()
+    def download(self, pageLink):
+        downloadLocationTest = self.location_testing(pageLink)
         hit = False
         while hit is False and hit is not None:
-                hit = next(downloadLocationTest, None)
+            hit = next(downloadLocationTest, None)
 
-        self.torrentFile = hit
+        return hit
+
+    def get_magnet(self, pageLink):
+        downloadLocationTest = self.location_testing(pageLink, magnet=True)
+        hit = False
+        while hit is False and hit is not None:
+            hit = next(downloadLocationTest, None)
+
+        return hit
+
+    def search_torrent(self, search, queryResult):
+        """
+        Add to the dic "queryResult" with a refernce used for the key
+        a list of returned torrent link with a specific search term.
+        ARGUMENTS:
+            search: The user searcher torrents.
+            queryResult: A dict proxy where the result will be stocked.
+        """
+        torrentzPage = urllib.urlopen(self.domain + '?q=' + search).read()
+        feed = bs4.BeautifulSoup(torrentzPage)
+        feedLink = feed.find_all('guid')
+        feedTitle = feed.find_all('title')
+        feedDescription = feed.find_all('description')
+
+        feedTitle.pop(0) # useless info
+        feedDescription.pop(0) # useless info
+
+        if len(feedTitle) == 0:
+            queryResult[self] = None
+            return
+
+        queryResult[self] = []
+        for i in range(len(feedTitle)):
+            newEntry = {}
+            newEntry['title'] = feedTitle[i].get_text()
+            newEntry['link'] = feedLink[i].get_text()
+
+            description = feedDescription[i].get_text().split()
+            # We parse something like
+            # <description>Size: 4780 MB Seeds: 27 Peers: 17 Hash:
+            # a000000a00a0aaaa00aa0000a0aaa0a0000aa0aa </description>
+            newEntry['size'] = description[1]
+            # Don't need to be converted in an int.
+            newEntry['seeds'] = int(description[4])
+            newEntry['peers'] = int(description[6])
+            newEntry['ref'] = self
+
+            queryResult[self].append(newEntry)

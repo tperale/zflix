@@ -14,21 +14,18 @@ To show help type:
 > python zflix.py -h
 
 It will output:
->usage: zflix.py [-h] [-v] [-d DESTDIR] [-t TEAM] [-n] search
+>usage: zflix.py [-h] [-d DESTDIR] [-m] [-p PLAYER] [-no NUMBER_OF_OUTPUT] search
 >
 >positional arguments:
 >  search
 >
 >optional arguments:
 >  -h, --help            show this help message and exit.
->  -p --player           Choose the player you want to use to watch your
-                         streamed torrent.
->  -d --destdir          Destination of the downloaded torrent.
->  -n --not_verified     Option to do unverified search.
-
-## TODO
-- Add the possibility to download subtile.
-- Auto remove the torrent downloaded at the end of the stream.
-- Find a way to only output streamable movie/show from a search request on torrentz.
-- Find a way to store bool  in the config file
-- If no torrent is found, do not launch peerflix
+    -d DESTDIR, --destdir DESTDIR
+                          Destination of the downloaded torrent
+    -m, --no_magnet       Use magnet link (no torrent download).
+    -p PLAYER, --player PLAYER
+                          Choose the player you want to use to watch your
+                          streamed torrent
+    -no NUMBER_OF_OUTPUT, --number_of_output NUMBER_OF_OUTPUT
+                          Number of torrent displayed with your search.

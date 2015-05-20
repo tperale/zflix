@@ -3,6 +3,6 @@
 
 [general]
 player = vlc
-destdir = ~/Downloads
-not_verified = False
-check = False
+destdir = /tmp
+number_of_output=40
+no_magnet = 0 # Use mmagnet link by default
