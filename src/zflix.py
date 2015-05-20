@@ -110,7 +110,7 @@ def main(option):
 
     else:
         # Use magne link to save the torrent.
-        torrentToStram = pageLink['ref'].get_magnet(pageLink['link'])
+        torrentToStream = pageLink['ref'].get_magnet(pageLink['link'])
 
     # Launch peerflix
     command = "peerflix '%s' --%s --path %s"\
