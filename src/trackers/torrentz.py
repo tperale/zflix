@@ -85,6 +85,7 @@ class Torrentz:
 
     def get_page(self, urlsList, researchedUrl):
         """
+        Get the page source of a spécified url (it can be a part of that url)
         """
         pageUrl = self.gethref(urlsList, researchedUrl.split('*'))
         if pageUrl:
@@ -98,7 +99,7 @@ class Torrentz:
 
         return res
 
-    def location_testing(self, pageLink):
+    def location_testing(self, pageLink, magnet=False):
         """
         Each download locations specified in the dict 'locations' is tested
         and the result is yielded (False if it didn't worked, else True)
@@ -117,7 +118,16 @@ class Torrentz:
                 soup = bs4.BeautifulSoup(res)
                 urls = soup.find_all('a')
                 # Looking for the download link
-                res = self.get_page(urls, self.locations[name]['dl'])
+                if magnet:
+                    i = 0
+                    res = False
+                    while i < len(urls) and res is False:
+                        if 'magnet:' in urls[i].get('href'):
+                            print('Getting ' + urls[i].get('href'))
+                            res = urls[i].get('href')
+                        i += 1
+                else:
+                    res = self.get_page(urls, self.locations[name]['dl'])
 
             yield res
 
@@ -125,6 +135,14 @@ class Torrentz:
 
     def download(self, pageLink):
         downloadLocationTest = self.location_testing(pageLink)
+        hit = False
+        while hit is False and hit is not None:
+            hit = next(downloadLocationTest, None)
+
+        return hit
+
+    def get_magnet(self, pageLink):
+        downloadLocationTest = self.location_testing(pageLink, magnet=True)
         hit = False
         while hit is False and hit is not None:
             hit = next(downloadLocationTest, None)
