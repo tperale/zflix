@@ -14,7 +14,7 @@ class AppURLopener(urllib.FancyURLopener):
 urllib._urlopener = AppURLopener()
 
 
-class Torrentz:
+class torrentz:
     def __init__(self):
         self.domain = 'https://www.torrentz.com'
         #if not_verified:
@@ -191,19 +191,32 @@ class Torrentz:
             The .torrent file.
         """
         trackerFind = self.get_specific_tracker(pageLink)
-        trackerPage = False
-        while trackerPage is False:
+        torrent = False
+        while torrent is False:
+            # Use a loop if torrent is not found in the page.
             trackerPage, trackerName = next(trackerFind, (None, None))
+            torrent = self.get_torrent_from_tracker(trackerPage, trackerName)
 
-        return self.get_torrent_from_tracker(trackerPage, trackerName)
+        return torrent
 
     def get_magnet(self, pageLink):
-        downloadLocationTest = self.location_testing(pageLink, magnet=True)
-        hit = False
-        while hit is False and hit is not None:
-            hit = next(downloadLocationTest, None)
+        """
+        Function returning the magnet link for the torrent.
 
-        return hit
+        ARGUMENT:
+            pageLink: The link of the page you want to get the torrent.
+
+        RETURN VALUE:
+            A magnet link.
+        """
+        downloadLocationTest = self.get_specific_tracker(pageLink)
+        magnet = False
+
+        while magnet is False:
+            trackerPage, trackerName = next(downloadLocationTest, None)
+            magnet = self.get_magnet_from_tracker(trackerPage)
+
+        return magnet
 
     def search_torrent(self, search, queryResult):
         """
