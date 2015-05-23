@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 import urllib
@@ -60,10 +60,10 @@ def save_file(toSave, outputPath):
 def main(option):
     # trackers = json.load('trackers.json')
     # TODO Should find a way to import all of the trackers
-    from trackers.torrentz import Torrentz
+    from trackers.torrentz import torrentz
     # from multiprocessing import Process, Manager
 
-    trackers = [Torrentz]
+    trackers = [torrentz]
 
     queryResult = {}
 
@@ -127,7 +127,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     try:
-        parser.add_argument('search', type=str)
+        parser.add_argument('search',
+                            nargs='?',
+                            default=None,
+                            type=str
+                            )
+
         parser.add_argument('-d', '--destdir',
                             default=config.get('general', 'destdir'),
                             type=str,
@@ -164,5 +169,9 @@ if __name__ == "__main__":
         print(e)
 
     else:
+        while option.search is None or option.search.strip() == "":
+            # If the user entered no "search" option.
+            option.search = raw_input("Enter keywords you want to search: ")
+
         option.destdir = os.path.expanduser(option.destdir)
         main(option)
