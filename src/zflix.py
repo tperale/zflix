@@ -104,6 +104,7 @@ def main(option):
         exit()
 
     pageLink = outputList[torrentNum]
+    torrentName = pageLink['title']
     if option.no_magnet:
         # Download and save the torrent.
         download = pageLink['ref'].get_torrent(pageLink['link'])
@@ -117,12 +118,35 @@ def main(option):
     # Launch peerflix
     command = "peerflix '%s' --%s --path %s"\
         % (torrentToStream, option.player, option.destdir)
+    try:
+        peerflix = subprocess.Popen(command, shell=True)
+        peerflix.wait()
 
-    subprocess.Popen(command, shell=True)
+    except KeyboardInterrupt:
+        # If during the stream trhe user exit it, the program will ask if he
+        # want to remove the download because maybe it's not ended.
+        if option.destdir == '/tmp':
+            print('Exiting')
+            exit()
+
+        #for dirFile in os.path.dirname(option.destdir):
+        #    for i in range(min(len()))
+        # TODO not functionnal
+        remove = raw_input("Do you want to remove the file ? [(y)es/(n)o]")
+        if remove.lower() in ['yes', 'y', 'ye', 'ys']:
+            toRemove = option.destdir
+            if option.destdir[-1] != '/':
+                toRemove += '/'
+            toRemove += torrentName
+            os.remove(toRemove)
+
+    except:
+        print('Peerflix is not installed, please type the following command'
+              + ' to install it (if npm is installed):')
+        print('sudo npm install -g peerflix')
 
 
 if __name__ == "__main__":
-    domain = 'https://www.torrentz.com'
     config = parse_config()
 
     parser = argparse.ArgumentParser()
@@ -154,13 +178,20 @@ if __name__ == "__main__":
                                   + " your streamed torrent")
                             )
 
-        parser.add_argument('-no', '--number_of_output',
+        parser.add_argument('-out', '--number_of_output',
                             default=config.get('general', 'number_of_output'),
                             type=int,
                             help=("Number of torrent displayed with your search.")
                             )
 
+        parser.add_argument('-no', '--no_data',
+                            default=False,
+                            action='store_true',
+                            help="No data are saved, stream goes into /tmp"
+                            )
+
         option = parser.parse_args()
+
     except Exception as e:
         # Would happen if config file is lacking of argument
         # TODO if an option is not in the config file add the line needed with
@@ -172,6 +203,10 @@ if __name__ == "__main__":
         while option.search is None or option.search.strip() == "":
             # If the user entered no "search" option.
             option.search = raw_input("Enter keywords you want to search: ")
+
+        if option.no_data:
+            option.magnet = True
+            option.destdir = "/tmp"
 
         option.destdir = os.path.expanduser(option.destdir)
         main(option)
