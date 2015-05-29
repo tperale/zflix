@@ -240,7 +240,7 @@ class torrentz:
             queryResult[self] = None
             return
 
-        queryResult[self] = []
+        result = []
         for i in range(len(feedTitle)):
             newEntry = {}
             newEntry['title'] = feedTitle[i].get_text()
@@ -256,4 +256,6 @@ class torrentz:
             newEntry['peers'] = int(description[6].replace(',', ''))
             newEntry['ref'] = self
 
-            queryResult[self].append(newEntry)
+            result.append(newEntry)
+
+        queryResult[self] = result
