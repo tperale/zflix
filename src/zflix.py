@@ -116,7 +116,12 @@ def main(option):
         i += 1
 
     # ASKING the user wich torrent he want to retrive.
-    torrentNum = input('Enter the torrent number you want to get. ')
+    try:
+        torrentNum = input('Enter the torrent number you want to get. ')
+
+    except KeyboardInterrupt:
+        print("Exiting.")
+        exit()
 
     if torrentNum == 'q' or torrentNum == 'Q' or (torrentNum > len(outputList)):
         exit()
