@@ -93,7 +93,6 @@ def main(option):
     queryResult = dict(tmpResult)
     # Convert into a traditionnal dict to be more easy to work with
 
-
     # CREATING the torrent selection output.
     # for a number of torrent the user specified in the option.
     i = 0
@@ -117,14 +116,18 @@ def main(option):
 
     # ASKING the user wich torrent he want to retrive.
     try:
-        torrentNum = input('Enter the torrent number you want to get. ')
+        torrentNum = raw_input('Enter the torrent number you want to get. ')
 
     except KeyboardInterrupt:
         print("Exiting.")
         exit()
 
-    if torrentNum == 'q' or torrentNum == 'Q' or (torrentNum > len(outputList)):
+    if (not torrentNum.isdigit() or int(torrentNum) > len(outputList)):
+        # Good  value check.
+        print("Exiting.")
         exit()
+    else:
+        torrentNum = int(torrentNum)
 
     pageLink = outputList[torrentNum]
     torrentName = pageLink['title']
