@@ -218,7 +218,7 @@ class torrentz:
 
         return magnet
 
-    def search_torrent(self, search, queryResult):
+    def search_torrent(self, search):
         """
         Add to the dic "queryResult" with a refernce used for the key
         a list of returned torrent link with a specific search term.
@@ -258,4 +258,4 @@ class torrentz:
 
             result.append(newEntry)
 
-        queryResult[self] = result
+        return result

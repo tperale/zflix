@@ -6,7 +6,8 @@ import os
 import argparse
 import subprocess
 from configParser import parse_config
-import json
+# import json
+from multiprocessing import Process, Manager
 
 
 class AppURLopener(urllib.FancyURLopener):
@@ -39,7 +40,7 @@ class bcolors:
 
 def save_file(toSave, outputPath):
     """
-    Save a webpage in a specified file
+    Save "toSave" file (a .torrent file for example), to the "outputPath"
     """
     try:
         print('Writting')
@@ -57,29 +58,46 @@ def save_file(toSave, outputPath):
     return res
 
 
+def start_search(tracker, query, queryResult):
+    """
+    Funtion used to make tracker query easier (the tracker module can just send
+    back a dict and don't have to mess with the dict)
+    """
+    queryResult[tracker] = tracker().search_torrent(query)
+
+
 def main(option):
     # trackers = json.load('trackers.json')
     # TODO Should find a way to import all of the trackers
     from trackers.torrentz import torrentz
-    # from multiprocessing import Process, Manager
 
     trackers = [torrentz]
 
-    queryResult = {}
+    manager = Manager()
+    tmpResult = manager.dict()
+    processes = []
 
-    for tracker in trackers:
-        #process = Process(target=tracker.search_torrent,
-        #                  args=(option.search, queryResult, ))
-        #process.start()
-        # TODO launch torrent in processes
-        tracker().search_torrent(option.search, queryResult)
+    for x in trackers:
+        # Create all processes and stock them in a list to be sure that
+        # they are all finished.
+        tmpProcess = Process(target=start_search,
+                             args=(x, option.search, tmpResult)
+                             )
+        tmpProcess.start()
+        processes.append(tmpProcess)
 
-    outputList = []
+    for process in processes:
+        # Wait for every process to be finished.
+        process.join()
+
+    queryResult = dict(tmpResult)
+    # Convert into a traditionnal dict to be more easy to work with
 
 
     # CREATING the torrent selection output.
     # for a number of torrent the user specified in the option.
     i = 0
+    outputList = []
     while i < option.number_of_output and \
             max(map(lambda x, y=queryResult: len(y[x]), queryResult)):
         # while there is torrent to display.
