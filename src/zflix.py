@@ -189,7 +189,7 @@ if __name__ == "__main__":
                             help='Destination of the downloaded torrent'
                             )
 
-        parser.add_argument('-m', '--no_magnet',
+        parser.add_argument('-m', '--magnet',
                             default=config.getboolean('general', 'no_magnet'),
                             action='store_true',
                             help=("Use magnet link (no torrent download.")
