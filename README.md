@@ -31,3 +31,7 @@ optional arguments:                                       | Help message.
 ## Example
 
 >python2 zflix.py "Revolution OS"
+
+## License
+
+[GPLv3](https://github.com/thomacer/zflix/blob/master/LICENSE).
