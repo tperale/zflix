@@ -28,15 +28,6 @@ class bcolors:
     BOLD = '\033[1;1m'
     UNDERLINE = '\033[4m'
 
-    def disable(self):
-        self.HEADER = ''
-        self.BLUE = ''
-        self.GREEN = ''
-        self.WARNING = ''
-        self.FAIL = ''
-        self.ENDC = ''
-        self.BOLD = ''
-
 
 def save_file(toSave, outputPath):
     """
@@ -100,16 +91,19 @@ def main(option):
     while i < option.number_of_output and \
             max(map(lambda x, y=queryResult: len(y[x]), queryResult)):
         # while there is torrent to display.
-        maxSeeds = max(queryResult, key=lambda x: queryResult[x][0]['seeds'])
+        maxSeeds = max(queryResult,
+                       key=lambda x: int(queryResult[x][0]['seeds'])
+                       )
+        # Find the torrent with the most seeder trough all tracker result.
         out = queryResult[maxSeeds].pop(0)
         outputList.append(out)
 
-        print('%2i) %50s: Size: %5sMB Seeds: %3s Peers: %3s' %
+        print('%2i) %50s: Size: %6sMB Seeds: %3s Peers: %3s' %
               (i,
                out['title'] if len(out['title']) < 50 else out['title'][:50],
-               out['size'],
-               bcolors.GREEN + str(out['seeds']) + bcolors.ENDC,
-               bcolors.WARNING + str(out['peers']) + bcolors.ENDC
+               bcolors.UNDERLINE + out['size'] + bcolors.ENDC,
+               bcolors.BOLD + bcolors.BLUE + out['seeds'] + bcolors.ENDC,
+               bcolors.RED + out['peers'] + bcolors.ENDC
                )
               )
         i += 1
@@ -131,15 +125,15 @@ def main(option):
 
     pageLink = outputList[torrentNum]
     torrentName = pageLink['title']
-    if option.no_magnet:
+    if option.magnet:
+        # Use magne link to save the torrent.
+        torrentToStream = pageLink['ref'].get_magnet(pageLink['link'])
+
+    else:
         # Download and save the torrent.
         download = pageLink['ref'].get_torrent(pageLink['link'])
         torrentToStream = option.destdir + '/' + pageLink['title'] + '.torrent'
         save_file(download, torrentToStream)
-
-    else:
-        # Use magne link to save the torrent.
-        torrentToStream = pageLink['ref'].get_magnet(pageLink['link'])
 
     # Launch peerflix
     command = "peerflix '%s' --%s --path %s"\
@@ -190,7 +184,7 @@ if __name__ == "__main__":
                             )
 
         parser.add_argument('-m', '--magnet',
-                            default=config.getboolean('general', 'no_magnet'),
+                            default=config.getboolean('general', 'magnet'),
                             action='store_true',
                             help=("Use magnet link (no torrent download.")
                             )

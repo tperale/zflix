@@ -24,13 +24,18 @@ optional arguments:                                       | Help message.
 --------------------------------------------------------- | ------------------------------------------------------------
 -h, --help                                                | Show this help message and exit.
 -d DESTDIR, --destdir DESTDIR                             | Destination of the downloaded torrent.
--m, --magnet                                           | Use magnet link (no torrent download).
+-m, --magnet                                              | Use magnet link (no torrent download).
 -p PLAYER, --player PLAYER                                | Choose the player you want to use to watch your streamed torrent.
 -no NUMBER_OF_OUTPUT, --number_of_output NUMBER_OF_OUTPUT | Number of torrent displayed with your search.
 
 ## Example
 
 >python2 zflix.py "Revolution OS"
+
+
+## Want to contribute ?
+
+It would be awesome !! Check out the wiki, you will find some documentation.
 
 ## License
 
