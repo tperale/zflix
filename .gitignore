@@ -1,4 +1,5 @@
-build/
-dist/
-zflix.egg-info/
-src/__pycache__/
+build/*
+dist/*
+zflix.egg-info/*
+src/__pycache__/*
+*.pyc
