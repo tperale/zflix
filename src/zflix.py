@@ -5,7 +5,7 @@ import urllib
 import os
 import argparse
 import subprocess
-from configParser import parse_config
+from configParser import parse_config, parse_default
 # import json
 from multiprocessing import Process, Manager
 
@@ -167,9 +167,11 @@ def main(option):
 
 
 if __name__ == "__main__":
-    config = parse_config()
-
     parser = argparse.ArgumentParser()
+
+    config = parse_config()  # User config file
+    default = parse_default()  # Default config file
+
     try:
         parser.add_argument('search',
                             nargs='?',
@@ -177,33 +179,68 @@ if __name__ == "__main__":
                             type=str
                             )
 
+        ####################################################################
+        try:
+            defaultDestdir = config.get('general', 'destdir')
+        except:
+            # If no argument.
+            print('No destination dir specified in the config file.')
+            defaultDestdir = default.get('general', 'destdir')
+            print('Using: ' + defaultDestdir)
+
         parser.add_argument('-d', '--destdir',
-                            default=config.get('general', 'destdir'),
+                            default=defaultDestdir,
                             type=str,
                             help='Destination of the downloaded torrent'
                             )
 
+        ####################################################################
+        try:
+            defaultMagnet = config.getboolean('general', 'magnet')
+        except:
+            # If no argument.
+            print('No magnet preference specified in the config file.')
+            defaultMagnet = default.getboolean('general', 'magnet')
+        actionMagnet = "store_false" if defaultMagnet else "store_true"
+
         parser.add_argument('-m', '--magnet',
-                            default=config.getboolean('general', 'magnet'),
-                            action='store_true',
+                            default=defaultMagnet,
+                            action=actionMagnet,
                             help=("Use magnet link (no torrent download.")
                             )
         # This option will call the get_magnet option of a tracker.
         # instead of the .download one.
 
+        ####################################################################
+        try:
+            defaultPlayer = config.get('general', 'player')
+        except:
+            # If no argument.
+            print('No player specified in the config file.')
+            defaultPlayer = default.get('general', 'player')
+
         parser.add_argument('-p', '--player',
-                            default=config.get('general', 'player'),
+                            default=defaultPlayer,
                             type=str,
                             help=("Choose the player you want to use to watch"
                                   + " your streamed torrent")
                             )
 
+        ####################################################################
+        try:
+            defaultNumber = config.get('general', 'number_of_output')
+        except:
+            # If no argument.
+            print('No number_of_output specified in the config file.')
+            defaultNumber = default.get('general', 'number_of_output')
+
         parser.add_argument('-out', '--number_of_output',
-                            default=config.get('general', 'number_of_output'),
+                            default=defaultNumber,
                             type=int,
                             help=("Number of torrent displayed with your search.")
                             )
 
+        ####################################################################
         parser.add_argument('-no', '--no_data',
                             default=False,
                             action='store_true',
@@ -214,8 +251,6 @@ if __name__ == "__main__":
 
     except Exception as e:
         # Would happen if config file is lacking of argument
-        # TODO if an option is not in the config file add the line needed with
-        # TODO default value.
         print('Error parsing in the config file.')
         print(e)
 

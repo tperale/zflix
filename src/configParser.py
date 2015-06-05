@@ -36,3 +36,12 @@ def parse_config():
             config.readfp(open(user + '/.zflixrc'))
 
     return config
+
+
+def parse_default():
+    """
+    Parse the default file in the zflix config folder.
+    """
+    config = ConfigParser.ConfigParser()
+    config.readfp(open("defaultFile"))
+
