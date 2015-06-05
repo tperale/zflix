@@ -1,29 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import urllib
+import requests
 import bs4
 import os
 import sys
 
 
-class AppURLopener(urllib.FancyURLopener):
-    version = "Mozilla/5.0 (X11; U; Linux x86_64; en-US)" + \
-        "AppleWebKit/532.0 (KHTML, like Gecko) Chrome/4.0.202.0 Safari/532.0"
-
-urllib._urlopener = AppURLopener()
-
-
 class torrentz:
     def __init__(self):
         self.domain = 'https://www.torrentz.com'
-        #if not_verified:
         self.domain += '/feedP'
-        #else:
-        #    self.domain += '/feed_verifiedP'
-
-        self.trackerIndex = None
-        self.torrentTitle = None
 
         self.locations = {"h33t": {"url": "http://www.h33t.to",
                                    "dl": "h33t.to/get/"},
@@ -102,7 +89,8 @@ class torrentz:
         if pageUrl:
             # If gethref() found the correct url
             print('Entering: %s' % (pageUrl))
-            res = urllib.urlopen(pageUrl).read()
+            res = requests.get(pageUrl)
+            res = res.text
             # Contain the source code of the page
         else:
             res = False
@@ -164,7 +152,8 @@ class torrentz:
         RETURN VALUE:
             The page of a supported tracker, and the name of the tracker.
         """
-        page = urllib.urlopen(pageLink).read()
+        page = requests.get(pageLink)
+        page = page.text
         soup = bs4.BeautifulSoup(page, 'html.parser')
         trackersUrls = soup.find_all('a')  # Every trackers listed in the page
 
@@ -227,7 +216,8 @@ class torrentz:
             search: The user searcher torrents.
             queryResult: A dict proxy where the result will be stocked.
         """
-        torrentzPage = urllib.urlopen(self.domain + '?q=' + search).read()
+        torrentzPage = requests.get(self.domain + '?q=' + search)
+        torrentzPage = torrentzPage.text
         feed = bs4.BeautifulSoup(torrentzPage)
         feedLink = feed.find_all('guid')
         feedTitle = feed.find_all('title')
