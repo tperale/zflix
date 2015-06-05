@@ -5,7 +5,7 @@
 A python CLI to seek torrent and directly stream them with peerflix.
 
 ## Requirements
-- [python2](https://www.python.org/download/releases/2.7.8/)
+- [python3](https://www.python.org/downloads/release/python-342/)
 - [BeautifulSoup](http://www.crummy.com/software/BeautifulSoup/bs4/doc/#installing-beautiful-soup) module
 - [peerflix](https://github.com/mafintosh/peerflix)
 
@@ -30,7 +30,9 @@ optional arguments:                                       | Help message.
 
 ## Example
 
->python2 zflix.py "Revolution OS"
+>python3 zflix.py "Revolution OS"
+
+![zflix screenshot](https://github.com/thomacer/zflix/blob/master/fig/screen.png)
 
 
 ## Want to contribute ?
