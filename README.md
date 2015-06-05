@@ -1,4 +1,4 @@
-### zflix
+### [zflix](http://thomacer.github.io/zflix)
 [![GitHub issues](http://img.shields.io/github/issues/thomacer/zflix.svg?style=flat)](https://github.com/thomacer/zflix/issues)
 [![Build Status](https://travis-ci.org/thomacer/zflix.svg?branch=master)](https://travis-ci.org/thomacer/zflix)
 
