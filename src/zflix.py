@@ -255,7 +255,7 @@ if __name__ == "__main__":
         print(e)
 
     else:
-        while option.search is None or option.search.strip() == "":
+        if option.search is None:
             # If the user entered no "search" option.
             option.search = raw_input("Enter keywords you want to search: ")
 
