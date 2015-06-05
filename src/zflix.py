@@ -1,21 +1,13 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
-import urllib
 import os
+import sys
 import argparse
 import subprocess
 from configParser import parse_config, parse_default
 # import json
 from multiprocessing import Process, Manager
-
-
-class AppURLopener(urllib.FancyURLopener):
-    version = "Mozilla/5.0 (X11; U; Linux x86_64; en-US)" + \
-        "AppleWebKit/532.0 (KHTML, like Gecko) Chrome/4.0.202.0 Safari/532.0"
-
-urllib._urlopener = AppURLopener()
-
 
 class bcolors:
     HEADER = '\033[95m'
@@ -102,6 +94,10 @@ def main(option):
             # If the list is empty delete so they are no error
             del queryResult[maxSeeds]
 
+        # TODO Add the reference here
+        # out["ref"] = maxSeeds # Set a reference so the program can call the
+                              # class later.
+
         outputList.append(out)
 
         print('%2i) %50s: Size: %6sMB Seeds: %3s Peers: %3s' %
@@ -116,7 +112,8 @@ def main(option):
 
     # ASKING the user wich torrent he want to retrive.
     try:
-        torrentNum = raw_input('Enter the torrent number you want to get. ')
+        print('Enter the torrent number you want to get. ')
+        torrentNum = sys.stdin.readline().strip()
 
     except KeyboardInterrupt:
         print("Exiting.")
@@ -131,14 +128,16 @@ def main(option):
 
     pageLink = outputList[torrentNum]
     torrentName = pageLink['title']
+    torrentLink = pageLink['link']
     if option.magnet:
         # Use magne link to save the torrent.
-        torrentToStream = pageLink['ref'].get_magnet(pageLink['link'])
+        ref = pageLink['ref']
+        torrentToStream = ref.get_magnet(torrentLink)
 
     else:
         # Download and save the torrent.
-        download = pageLink['ref'].get_torrent(pageLink['link'])
-        torrentToStream = option.destdir + '/' + pageLink['title'] + '.torrent'
+        download = pageLink['ref'].get_torrent(torrentLink)
+        torrentToStream = option.destdir + '/' + torrentName + '.torrent'
         save_file(download, torrentToStream)
 
     # Launch peerflix
@@ -158,7 +157,9 @@ def main(option):
         #for dirFile in os.path.dirname(option.destdir):
         #    for i in range(min(len()))
         # TODO not functionnal
-        remove = raw_input("Do you want to remove the file ? [(y)es/(n)o]")
+        # remove = raw_input("Do you want to remove the file ? [(y)es/(n)o]")
+        print("Do you want to remove the file ? [(y)es/(n)o]")
+        remove = sys.stdin.readline().strip()
         if remove.lower() in ['yes', 'y', 'ye', 'ys']:
             toRemove = option.destdir
             if option.destdir[-1] != '/':
@@ -263,7 +264,8 @@ if __name__ == "__main__":
     else:
         if option.search is None:
             # If the user entered no "search" option.
-            option.search = raw_input("Enter keywords you want to search: ")
+            print("Enter keywords you want to search: ")
+            option.search = sys.stdin.readline().strip()
 
         if option.no_data:
             option.magnet = True
