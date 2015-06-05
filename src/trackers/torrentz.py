@@ -146,7 +146,7 @@ class torrentz:
 
         i = 0
         res = False
-        while res is False:
+        while res is False and i < len(urls):
             if 'magnet:' in urls[i].get('href'):
                 print('Getting ' + urls[i].get('href'))
                 res = urls[i].get('href')
