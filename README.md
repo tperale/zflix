@@ -35,7 +35,7 @@ optional arguments:                                       | Help message.
 
 ## Want to contribute ?
 
-It would be awesome !! Check out the wiki, you will find some documentation.
+It would be awesome !! Check out the [wiki](https://github.com/thomacer/zflix/wiki), you will find some documentation.
 
 ## License
 
