@@ -237,8 +237,7 @@ class torrentz:
         feedDescription.pop(0) # useless info
 
         if len(feedTitle) == 0:
-            queryResult[self] = None
-            return
+            return []
 
         result = []
         for i in range(len(feedTitle)):
