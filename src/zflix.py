@@ -61,8 +61,9 @@ def main(option):
     # trackers = json.load('trackers.json')
     # TODO Should find a way to import all of the trackers
     from trackers.torrentz import torrentz
+    from trackers.kat import kat
 
-    trackers = [torrentz]
+    trackers = [torrentz, kat]
 
     manager = Manager()
     tmpResult = manager.dict()
@@ -71,6 +72,7 @@ def main(option):
     for x in trackers:
         # Create all processes and stock them in a list to be sure that
         # they are all finished.
+        print("Searching %s with %s" % (option.search, x))
         tmpProcess = Process(target=start_search,
                              args=(x, option.search, tmpResult)
                              )
@@ -96,6 +98,10 @@ def main(option):
                        )
         # Find the torrent with the most seeder trough all tracker result.
         out = queryResult[maxSeeds].pop(0)
+        if not len(queryResult[maxSeeds]):
+            # If the list is empty delete so they are no error
+            del queryResult[maxSeeds]
+
         outputList.append(out)
 
         print('%2i) %50s: Size: %6sMB Seeds: %3s Peers: %3s' %
