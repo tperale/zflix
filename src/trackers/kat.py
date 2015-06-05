@@ -6,7 +6,7 @@ import requests
 
 
 class kat:
-    domain = 'https://kat.cr/usearch/'
+    domain = 'https://kat.cr/'
 
     def __init__(self):
         self.results = {}
@@ -36,19 +36,11 @@ class kat:
         """
         return (self.results[pageLink])["magnet"]
 
-    def search_torrent(self, search):
+    def _get_torrents_from_link(self, pageLink):
         """
-        Add to the dic "queryResult" with a refernce used for the key
-        a list of returned torrent link with a specific search term.
-
-        ARGUMENTS:
-            search: The user searcher torrents.
-            queryResult: A dict proxy where the result will be stocked.
         """
         result = []
-
-        page = self.domain + "?q=" + search
-        request = requests.get(page)
+        request = requests.get(pageLink)
         data = request.text
         soup = bs4.BeautifulSoup(data)
         odd = soup.find_all("tr", class_="odd")
@@ -101,3 +93,44 @@ class kat:
             self.results[newEntry["link"]] = newEntry
 
         return result
+
+    def _get_popular(self):
+        """
+        """
+        pageByType = ['https://kat.cr/movies/', 'https://kat.cr/tv/',
+                      'https://kat.cr/anime/']
+        pageResult = {}
+        for pageLink in pageByType:
+            pageResult[pageLink] = self._get_torrents_from_link(pageLink)
+
+        result = []
+        for i in range(sum([len(pageResult[x]) for x in pageResult])):
+            maxSeeds = max(pageResult,
+                           key=lambda x: int(pageResult[x][0]['seeds'])
+                           )
+            # Find the torrent with the most seeder trough all tracker result.
+            out = pageResult[maxSeeds].pop(0)
+            if not len(pageResult[maxSeeds]):
+            # If the list is empty delete so they are no error
+                del pageResult[maxSeeds]
+
+            result.append(out)
+
+        return result
+
+    def search_torrent(self, search):
+        """
+        Add to the dic "queryResult" with a refernce used for the key
+        a list of returned torrent link with a specific search term.
+
+        ARGUMENTS:
+            search: The user searched torrents arguments.
+        """
+        if search == '':
+            # If the user just want to search through popular torrents
+            return self._get_popular()
+
+        pageLink = self.domain + "usearch/?q=" + search
+
+        return self._get_torrents_from_link(pageLink)
+
