@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import requests
-import bs4
-import os
-import sys
-
+try:
+    import bs4
+except:
+    print("BeautifulSoup4 is not installed.")
+    exit()
 
 class torrentz:
     def __init__(self):
         self.domain = 'https://www.torrentz.com'
-        self.domain += '/feedP'
 
         self.locations = {"h33t": {"url": "http://www.h33t.to",
                                    "dl": "h33t.to/get/"},
@@ -158,7 +158,7 @@ class torrentz:
         trackersUrls = soup.find_all('a')  # Every trackers listed in the page
 
         for name in self.locations:
-            print("trying %s... \n" % name)
+            print("trying %s..." % name)
 
             trackersPage = self.get_page(trackersUrls,
                                          self.locations[name]['url']
@@ -179,7 +179,7 @@ class torrentz:
         RETURN VALUE:
             The .torrent file.
         """
-        trackerFind = self.get_specific_tracker(pageLink)
+        trackerFind = self.get_specific_tracker(self.domain + pageLink)
         torrent = False
         while torrent is False:
             # Use a loop if torrent is not found in the page.
@@ -198,7 +198,7 @@ class torrentz:
         RETURN VALUE:
             A magnet link.
         """
-        downloadLocationTest = self.get_specific_tracker(pageLink)
+        downloadLocationTest = self.get_specific_tracker(self.domain + pageLink)
         magnet = False
 
         while magnet is False:
@@ -216,33 +216,31 @@ class torrentz:
             search: The user searcher torrents.
             queryResult: A dict proxy where the result will be stocked.
         """
-        torrentzPage = requests.get(self.domain + '?q=' + search)
+        torrentzPage = requests.get(self.domain + '/any?f=' + search)
         torrentzPage = torrentzPage.text
-        feed = bs4.BeautifulSoup(torrentzPage)
-        feedLink = feed.find_all('guid')
-        feedTitle = feed.find_all('title')
-        feedDescription = feed.find_all('description')
-
-        feedTitle.pop(0) # useless info
-        feedDescription.pop(0) # useless info
-
-        if len(feedTitle) == 0:
-            return []
+        soup = bs4.BeautifulSoup(torrentzPage)
+        torrentLinks = soup.find('div', class_="results")
+        torrentLinks = torrentLinks.find_all('dl')
 
         result = []
-        for i in range(len(feedTitle)):
+        for link in torrentLinks[:-1]:
             newEntry = {}
-            newEntry['title'] = feedTitle[i].get_text()
-            newEntry['link'] = feedLink[i].get_text()
 
-            description = feedDescription[i].get_text().split()
-            # We parse something like
-            # <description>Size: 4780 MB Seeds: 27 Peers: 17 Hash:
-            # a000000a00a0aaaa00aa0000a0aaa0a0000aa0aa </description>
-            newEntry['size'] = description[1]
+            mainCell = link.find("a")
+            newEntry['title'] = mainCell.text
+            newEntry['link'] = mainCell.get("href")
+
+            try:
+                newEntry['size'] = link.find("span", class_="s").text
+            except AttributeError:
+                newEntry['size'] = "Pending"
+
             # Don't need to be converted in an int.
-            newEntry['seeds'] = description[4].replace(',', '')
-            newEntry['peers'] = description[6].replace(',', '')
+            newEntry['seeds'] = link.find("span", class_="u"
+                                          ).text.replace(',', '')
+            newEntry['peers'] = link.find("span", class_="d"
+                                          ).text.replace(',', '')
+
             newEntry['ref'] = self
 
             result.append(newEntry)
