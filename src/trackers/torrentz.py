@@ -158,7 +158,7 @@ class torrentz:
         trackersUrls = soup.find_all('a')  # Every trackers listed in the page
 
         for name in self.locations:
-            os.write(sys.stdout.fileno(), "trying %s... \n" % name)
+            print("trying %s... \n" % name)
 
             trackersPage = self.get_page(trackersUrls,
                                          self.locations[name]['url']
