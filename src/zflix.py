@@ -82,8 +82,7 @@ def main(option):
     # for a number of torrent the user specified in the option.
     i = 0
     outputList = []
-    while i < option.number_of_output and \
-            max(map(lambda x, y=queryResult: len(y[x]), queryResult)):
+    while i < option.number_of_output and queryResult:
         # while there is torrent to display.
         maxSeeds = max(queryResult,
                        key=lambda x: int(queryResult[x][0]['seeds'])
