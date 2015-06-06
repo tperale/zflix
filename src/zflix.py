@@ -100,23 +100,25 @@ def main(option):
 
         outputList.append(out)
 
-        print('%2i) %50s: Size: %6sMB Seeds: %3s Peers: %3s' %
+        print('%02i| % 50s | Size:% 9s | S:% 5s | P:% 5s' %
               (i,
                out['title'] if len(out['title']) < 50 else out['title'][:50],
-               bcolors.UNDERLINE + out['size'] + bcolors.ENDC,
-               bcolors.BOLD + bcolors.BLUE + out['seeds'] + bcolors.ENDC,
-               bcolors.RED + out['peers'] + bcolors.ENDC
+               #bcolors.UNDERLINE + out['size'] + bcolors.ENDC,
+               out['size'],
+               #bcolors.BOLD + bcolors.BLUE + out['seeds'] + bcolors.ENDC,
+               out['seeds'],
+               out['peers']
                )
               )
         i += 1
 
     # ASKING the user wich torrent he want to retrive.
     try:
-        print('Enter the torrent number you want to get. ')
-        torrentNum = sys.stdin.readline().strip()
+        print("Enter the torrent number you want to get. ", end="")
+        torrentNum = input()
 
     except KeyboardInterrupt:
-        print("Exiting.")
+        print("\nExiting.")
         exit()
 
     if (not torrentNum.isdigit() or int(torrentNum) > len(outputList)):
@@ -158,7 +160,7 @@ def main(option):
         #    for i in range(min(len()))
         # TODO not functionnal
         # remove = raw_input("Do you want to remove the file ? [(y)es/(n)o]")
-        print("Do you want to remove the file ? [(y)es/(n)o]")
+        print("Do you want to remove the file ? [(y)es/(n)o] ", end="")
         remove = sys.stdin.readline().strip()
         if remove.lower() in ['yes', 'y', 'ye', 'ys']:
             toRemove = option.destdir
@@ -264,8 +266,8 @@ if __name__ == "__main__":
     else:
         if option.search is None:
             # If the user entered no "search" option.
-            print("Enter keywords you want to search: ")
-            option.search = sys.stdin.readline().strip()
+            print("Enter keywords you want to search: ", end="")
+            option.search = input()
 
         if option.no_data:
             option.magnet = True
