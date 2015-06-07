@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import os
@@ -46,7 +46,11 @@ def start_search(tracker, query, queryResult):
     Funtion used to make tracker query easier (the tracker module can just send
     back a dict and don't have to mess with the dict)
     """
-    queryResult[tracker] = tracker().search_torrent(query)
+    result = tracker().search_torrent(query)
+    if result:
+        # If they are result to display else no need to include it in
+        # the dict
+        queryResult[tracker] = result
 
 
 def main(option):
@@ -99,7 +103,7 @@ def main(option):
 
         outputList.append(out)
 
-        print('%02i| % 50s | Size:% 9s | S:% 5s | P:% 5s' %
+        print('%2i| % 50s | Size:% 9s | S:% 5s | P:% 5s' %
               (i,
                out['title'] if len(out['title']) < 50 else out['title'][:50],
                #bcolors.UNDERLINE + out['size'] + bcolors.ENDC,
@@ -110,6 +114,11 @@ def main(option):
                )
               )
         i += 1
+
+    if not outputList:
+        # If no result found
+        print("No result found, exiting...")
+        exit()
 
     # ASKING the user wich torrent he want to retrive.
     try:
