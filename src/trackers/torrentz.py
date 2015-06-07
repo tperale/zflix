@@ -202,8 +202,11 @@ class torrentz:
         magnet = False
 
         while magnet is False:
-            trackerPage, trackerName = next(downloadLocationTest, None)
-            magnet = self.get_magnet_from_tracker(trackerPage)
+            trackerPage, trackerName = next(downloadLocationTest, (None, None))
+            if trackerPage is not None:
+                magnet = self.get_magnet_from_tracker(trackerPage)
+            else:
+                break
 
         return magnet
 
