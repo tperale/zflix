@@ -27,6 +27,9 @@ optional arguments:                                       | Help message.
 -m, --magnet                                              | Use magnet link (no torrent download).
 -p PLAYER, --player PLAYER                                | Choose the player you want to use to watch your streamed torrent.
 -no NUMBER_OF_OUTPUT, --number_of_output NUMBER_OF_OUTPUT | Number of torrent displayed with your search.
+-s, --subtitle              |  Make the program download subtitle (or not if the option is already set to "True"  in your config file (default))
+  -l LANGUAGE, --language LANGUAGE     |      Set the language you want to use for the subtitles (see [here](http://en.wikipedia.org/wiki/List_of_ISO_639-2_codes) in ISO 639-2/5 column to find your language).
+
 
 ## Example
 
