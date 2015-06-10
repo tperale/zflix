@@ -92,6 +92,7 @@ def main(option):
                        key=lambda x: int(queryResult[x][0]['seeds'])
                        )
         # Find the torrent with the most seeder trough all tracker result.
+        # It's basicly a merge of all the result of the trackers.
         out = queryResult[maxSeeds].pop(0)
         if not len(queryResult[maxSeeds]):
             # If the list is empty delete so they are no error
@@ -150,9 +151,13 @@ def main(option):
         torrentToStream = option.destdir + '/' + torrentName + '.torrent'
         save_file(download, torrentToStream)
 
+    from subtitle.opensubtitle import opensubtitle
+    os = opensubtitle()
+    subtitle = os.get_subtitle(torrentName, option.language, option.destdir)
+
     # Launch peerflix
-    command = "peerflix '%s' --%s --path %s"\
-        % (torrentToStream, option.player, option.destdir)
+    command = "peerflix '%s' --%s --path %s --subtitles %s"\
+        % (torrentToStream, option.player, option.destdir, subtitle)
     try:
         peerflix = subprocess.Popen(command, shell=True)
         peerflix.wait()
@@ -241,6 +246,38 @@ if __name__ == "__main__":
                             type=str,
                             help=("Choose the player you want to use to watch"
                                   + " your streamed torrent")
+                            )
+
+        ####################################################################
+        try:
+            defaultLang = config.get('general', 'language')
+        except:
+            # If no argument.
+            print('No language specified in the config file.')
+            defaultLang = default.get('general', 'language')
+
+        parser.add_argument('-l', '--language',
+                            default=defaultLang,
+                            type=str,
+                            help="Select the language you want for subtitles"
+                            )
+
+        ####################################################################
+        try:
+            defaultSub = config.getboolean('general', 'subtitle')
+        except:
+            # If no argument.
+            print('No subtitle option specified in the config file.')
+            defaultSub = default.getboolean('general', 'subtitle')
+        actionSub = "store_false" if defaultSub else "store_true"
+
+        parser.add_argument('-s', '--subtitle',
+                            default=defaultSub,
+                            action=actionSub,
+                            help=("Set option if you want to get subtitle or "
+                                  + "not for the streamed torrent (this option "
+                                  + "set the opposite of config what's in the "
+                                  + "file).")
                             )
 
         ####################################################################
