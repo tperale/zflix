@@ -151,11 +151,12 @@ def main(option):
         torrentToStream = option.destdir + '/' + torrentName + '.torrent'
         save_file(download, torrentToStream)
 
-    from subtitle.opensubtitle import opensubtitle
-    os = opensubtitle()
-    print("Getting the subtitle from OpenSubtitle...", end="  ")
-    subtitle = os.get_subtitle(torrentName, option.language, option.destdir)
-    print("Saved as " + subtitle)
+    if option.subtitle:
+        from subtitle.opensubtitle import opensubtitle
+        os = opensubtitle()
+        print("Getting the subtitle from OpenSubtitle...", end="  ")
+        subtitle = os.get_subtitle(torrentName, option.language, option.destdir)
+        print("Saved as " + subtitle)
 
     # Launch peerflix
     command = "peerflix '%s' --%s --path %s --subtitles %s"\
@@ -261,7 +262,8 @@ if __name__ == "__main__":
         parser.add_argument('-l', '--language',
                             default=defaultLang,
                             type=str,
-                            help="Select the language you want for subtitles"
+                            help=("Set the language you want to use for the "
+                                  + "subtitles")
                             )
 
         ####################################################################
@@ -276,10 +278,9 @@ if __name__ == "__main__":
         parser.add_argument('-s', '--subtitle',
                             default=defaultSub,
                             action=actionSub,
-                            help=("Set option if you want to get subtitle or "
-                                  + "not for the streamed torrent (this option "
-                                  + "set the opposite of config what's in the "
-                                  + "file).")
+                            help=("Make the program download subtitle (or not "
+                                  + "if the option is already set to 'True'  in"
+                                  + "your config file (default))")
                             )
 
         ####################################################################
@@ -293,7 +294,8 @@ if __name__ == "__main__":
         parser.add_argument('-out', '--number_of_output',
                             default=defaultNumber,
                             type=int,
-                            help=("Number of torrent displayed with your search.")
+                            help=("Set the number of torrent displayed with "
+                                  + "your search.")
                             )
 
         ####################################################################
