@@ -153,7 +153,9 @@ def main(option):
 
     from subtitle.opensubtitle import opensubtitle
     os = opensubtitle()
+    print("Getting the subtitle from OpenSubtitle...", end="  ")
     subtitle = os.get_subtitle(torrentName, option.language, option.destdir)
+    print("Saved as " + subtitle)
 
     # Launch peerflix
     command = "peerflix '%s' --%s --path %s --subtitles %s"\
