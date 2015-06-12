@@ -23,9 +23,11 @@ class bencoding:
     def string_eval(self, i):
         res = ''
         for x in range(i):
-            res += next(self.reader)
+            current = next(self.reader, None)
+            if current is None:
+                break
+            res += current
 
-        print(('STRING', res))
         return res
 
     def integer_eval(self):
@@ -35,59 +37,56 @@ class bencoding:
             res += current
             current = next(self.reader)
 
-        print(('INT', res))
         return int(res) if res else ''
 
     def list_eval(self):
         current = next(self.reader)
         res = []
-        while current != 'e':
+        while current != 'e' and current is not None:
             if self.special.get(current, False):
                 new = self.special[current]()
                 res.append(new)
 
             elif current.isdigit():
-                while current.isdigit():
-                    current += next(self.reader)
+                while current.isdigit() and current is not None:
+                    current += next(self.reader, None)
                 new = self.string_eval(int(current[:-1]))
                 res.append(new)
 
+            current = next(self.reader, None)
 
-            current = next(self.reader)
-
-        print(('LIST', res))
         return res
 
     def dict_eval(self):
         current = next(self.reader)
         res = {}
-        while current != 'e':
+        while (current != 'e') and (current is not None):
             if self.special.get(current, False):
                 key = self.special[current]()
             elif current.isdigit():
-                while current.isdigit():
-                    current += next(self.reader)
+                while current.isdigit() and (current is not None):
+                    current += next(self.reader, None)
+
                 key = self.string_eval(int(current[:-1]))
-            else:
-                current = next(self.reader)
-                continue
 
-
-            current = next(self.reader)
+            current = next(self.reader, None)
+            if current is None:
+                break
 
             if self.special.get(current, False):
                 value = self.special[current]()
 
             elif current.isdigit():
-                while current.isdigit():
-                    current += next(self.reader)
+                while current.isdigit() and (current is not None):
+                    current += next(self.reader, None)
                 value = self.string_eval(int(current[:-1]))
 
-            current = next(self.reader)
+            current = next(self.reader, None)
+            if current is None:
+                break
 
             res[key] = value
 
-        print(('DICT', key, value))
         return res
 
     def decode(self):
@@ -116,12 +115,14 @@ class bencoding:
         Create a generator from a torrent file, to return the next letter,
         each time he is called.
         """
-        torrent = open(fileName, 'rb')
-        current = torrent.read(1).decode("utf-8", "replace")
+        torrent = open(fileName, 'r')
+        current = torrent.read(1)#.decode("utf-8", "replace")
         while current != '':
-            print(current)
+            #if current == '\n':
+            #    current = torrent.read(1).decode("utf-8", "replace")
+            #    continue
             yield current
-            current = torrent.read(1).decode("utf-8", "replace")
+            current = torrent.read(1)#.decode("utf-8", "replace")
 
         torrent.close()
 
@@ -131,7 +132,13 @@ def get_info(toDecode):
     Return a list of all files the torrent will output.
     """
     torrent = bencoding(toDecode)
-    info = torrent.decode()['info']
+    info = torrent.decode()
+    try:
+        info = info['info']
+    except:
+        info = info
+
+    print(info)
 
     if info.get('files', False):
         # If there is more than 1 file.
@@ -149,3 +156,7 @@ def get_info(toDecode):
 
 
     return res
+
+if __name__ == '__main__':
+    import sys
+    print(get_info(sys.argv[1]))
