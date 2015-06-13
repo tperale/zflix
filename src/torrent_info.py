@@ -1,11 +1,9 @@
 import os
 
+
 class bencoding:
     # http://fileformats.wikia.com/wiki/Torrent_file
     def __init__(self, toDecode):
-        # struct:
-        # <special><number>:<string>e
-        # or
         self.special = {'i': self.integer_eval,
                         'l': self.list_eval,
                         'd': self.dict_eval
@@ -27,7 +25,6 @@ class bencoding:
             if current is None:
                 break
             res += current
-
         return res
 
     def integer_eval(self):
@@ -70,8 +67,6 @@ class bencoding:
                 key = self.string_eval(int(current[:-1]))
 
             current = next(self.reader, None)
-            if current is None:
-                break
 
             if self.special.get(current, False):
                 value = self.special[current]()
@@ -81,11 +76,9 @@ class bencoding:
                     current += next(self.reader, None)
                 value = self.string_eval(int(current[:-1]))
 
-            current = next(self.reader, None)
-            if current is None:
-                break
-
             res[key] = value
+
+            current = next(self.reader, None)
 
         return res
 
@@ -108,21 +101,16 @@ class bencoding:
 
         return res
 
-
-
     def create_gen(self, fileName):
         """
         Create a generator from a torrent file, to return the next letter,
         each time he is called.
         """
         torrent = open(fileName, 'r')
-        current = torrent.read(1)#.decode("utf-8", "replace")
+        current = torrent.read(1)
         while current != '':
-            #if current == '\n':
-            #    current = torrent.read(1).decode("utf-8", "replace")
-            #    continue
             yield current
-            current = torrent.read(1)#.decode("utf-8", "replace")
+            current = torrent.read(1)
 
         torrent.close()
 
@@ -133,12 +121,8 @@ def get_info(toDecode):
     """
     torrent = bencoding(toDecode)
     info = torrent.decode()
-    try:
-        info = info['info']
-    except:
-        info = info
 
-    print(info)
+    info = info['info']
 
     if info.get('files', False):
         # If there is more than 1 file.
