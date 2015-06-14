@@ -9,6 +9,8 @@ from configParser import parse_config, parse_default
 # import json
 from multiprocessing import Process, Manager
 
+from torrent_info import get_info
+
 class bcolors:
     HEADER = '\033[95m'
     BLUE = '\033[94m'
@@ -140,6 +142,8 @@ def main(option):
     pageLink = outputList[torrentNum]
     torrentName = pageLink['title']
     torrentLink = pageLink['link']
+    ###############################################################
+    # Getting the torrent.
     if option.magnet:
         # Use magne link to save the torrent.
         ref = pageLink['ref']
@@ -151,11 +155,23 @@ def main(option):
         torrentToStream = option.destdir + '/' + torrentName + '.torrent'
         save_file(download, torrentToStream)
 
+    ###############################################################
+    # Getting the output name.
+    info = get_info(torrentToStream)
+
+    ###############################################################
+    # Getting the subtitle.
     if option.subtitle:
         from subtitle.opensubtitle import opensubtitle
         os = opensubtitle()
         print("Getting the subtitle from OpenSubtitle...", end="  ")
-        subtitle = os.get_subtitle(torrentName, option.language, option.destdir)
+        #for fileInfo in info[0]:
+        fileInfo = info[0]
+        # For now we wiil just use the first one
+        subtitle = os.get_subtitle(fileInfo['name'],
+                                    option.language,
+                                    option.destdir)
+        # TODO ADD SIZE
         print("Saved as " + subtitle)
 
     # Launch peerflix
@@ -179,10 +195,9 @@ def main(option):
         print("Do you want to remove the file ? [(y)es/(n)o] ", end="")
         remove = sys.stdin.readline().strip()
         if remove.lower() in ['yes', 'y', 'ye', 'ys']:
-            toRemove = option.destdir
-            if option.destdir[-1] != '/':
-                toRemove += '/'
-            toRemove += torrentName
+            toRemove = info[0]['folder']
+            if toRemove is None:
+                toRemove = info[0]['name']
             os.remove(toRemove)
 
     except:
@@ -319,7 +334,7 @@ if __name__ == "__main__":
             option.search = input()
 
         if option.no_data:
-            option.magnet = True
+            # option.magnet = True
             option.destdir = "/tmp"
 
         option.destdir = os.path.expanduser(option.destdir)
