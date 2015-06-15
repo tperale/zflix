@@ -21,27 +21,6 @@ class bcolors:
     BOLD = '\033[1;1m'
     UNDERLINE = '\033[4m'
 
-
-def save_file(toSave, outputPath):
-    """
-    Save "toSave" file (a .torrent file for example), to the "outputPath"
-    """
-    try:
-        print('Writting')
-        with open(outputPath, "w") as openedFile:
-            openedFile.write(toSave)
-
-        print("Torrent Saved: %s" % (outputPath))
-
-        res = True
-
-    except Exception as e:
-        res = False
-        print(e)
-
-    return res
-
-
 def start_search(tracker, query, queryResult):
     """
     Funtion used to make tracker query easier (the tracker module can just send
@@ -139,18 +118,17 @@ def main(option):
         torrentNum = int(torrentNum)
 
     pageLink = outputList[torrentNum]
-    torrentName = pageLink['title']
     torrentLink = pageLink['link']
+
     ###############################################################
     # Getting the torrent.
-
     # Use magne link to save the torrent.
-    ref = pageLink['ref']
+    ref = pageLink['ref']  # Reference to the tracker.
     magnetLink = ref.get_magnet(torrentLink)
 
     ###############################################################
     # Getting the torrent metadata.
-    info = get_info(magnetLink)
+    info = get_info(magnetLink, option.destdir)
     # TODO add the aptitude to save the torrent.
 
     ###############################################################
@@ -158,12 +136,13 @@ def main(option):
     if option.subtitle:
         os = opensubtitle()
         print("Getting the subtitle from OpenSubtitle...", end="  ")
-        #for fileInfo in info[0]:
+        # TODO Add a better support for multifiles torrents.
         fileInfo = info[0]
         # For now we wiil just use the first one
         subtitle = os.get_subtitle(fileInfo['name'],
-                                    option.language,
-                                    option.destdir)
+                                   option.language,
+                                   fileInfo['length'],
+                                   option.destdir)
         # TODO ADD SIZE
         print("Saved as " + subtitle)
 

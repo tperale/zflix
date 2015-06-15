@@ -148,11 +148,11 @@ class bencoding:
             yield i
 
 
-def get_info(magnet, savePath=None):
+def get_info(magnet, destdir):
     """
     Return a list of all files the torrent will output.
     """
-    torrent = bencoding(magnet)
+    torrent = bencoding(magnet.upper())
     info = torrent.decode()
     info = info['info']
 
@@ -164,13 +164,19 @@ def get_info(magnet, savePath=None):
                         'length': torrentFile['length'],
                         'folder': info['name']}
                        )
-
     else:
         res = [{'name': info['name'],
                 'length': info['length'],
                 'folder': None}]
 
+    if destdir != "/tmp":
+        # If the user want to save the torrent file.
+        with open(destdir + res[0]['name'], "w") as torrent:
+            torrent.write(torrent.torrent)
+        print("Torrent saved in " + destdir)
+
     return res
+
 
 
 if __name__ == '__main__':

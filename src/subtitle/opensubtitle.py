@@ -55,19 +55,21 @@ class opensubtitle:
         """
         Return type: a list of movies, returned by the opensubtitle api.
         """
-        res =  self.xmlrpc_server.SearchSubtitles(self.token,
-                                                  [{"query": query,
-                                                    "sublanguageid": lang}]
-                                                  )["data"]
+        res = self.xmlrpc_server.SearchSubtitles(self.token,
+                                                 [{"query": query,
+                                                   "sublanguageid": lang,
+                                                   }]
+                                                 )["data"]
         return res
 
-    def search_hash(self, name, lang):
+    def search_hash(self, name, lang, length):
         """
         """
         hashed_name = self.hash_name(name)
 
         searchTerms = [{"sublanguageid": lang,
                         "moviehash": hashed_name,
+                        "moviebytesize": length,
                          }]
 
         res = self.xmlrpc_server.SearchSubtitles(self.token, searchTerms
@@ -106,14 +108,15 @@ class opensubtitle:
         # TODO OS remove zip file creted and jk
         return extractedFile
 
-    def get_subtitle(self, name, lang, location):
+    def get_subtitle(self, name, lang, length, location):
         """
         Try to find the best subtitle. according to the name the user pass in
         argument. And the download them in the movie folder.
         """
-        subtitle = self.search_hash(name, lang)
+        subtitle = self.search_hash(name, lang, length)
 
         if subtitle is False:
+            print('not hash')
             # Research by query are often more flexible and give more result.
             subtitle = self.search_query(name, lang).pop(0)
 
