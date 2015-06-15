@@ -6,8 +6,9 @@ import sys
 import argparse
 import subprocess
 from configParser import parse_config, parse_default
-# import json
 from multiprocessing import Process, Manager
+from torrent_info import get_info
+from subtitle.opensubtitle import opensubtitle
 
 class bcolors:
     HEADER = '\033[95m'
@@ -19,27 +20,6 @@ class bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1;1m'
     UNDERLINE = '\033[4m'
-
-
-def save_file(toSave, outputPath):
-    """
-    Save "toSave" file (a .torrent file for example), to the "outputPath"
-    """
-    try:
-        print('Writting')
-        with open(outputPath, "w") as openedFile:
-            openedFile.write(toSave)
-
-        print("Torrent Saved: %s" % (outputPath))
-
-        res = True
-
-    except Exception as e:
-        res = False
-        print(e)
-
-    return res
-
 
 def start_search(tracker, query, queryResult):
     """
@@ -138,29 +118,37 @@ def main(option):
         torrentNum = int(torrentNum)
 
     pageLink = outputList[torrentNum]
-    torrentName = pageLink['title']
     torrentLink = pageLink['link']
-    if option.magnet:
-        # Use magne link to save the torrent.
-        ref = pageLink['ref']
-        torrentToStream = ref.get_magnet(torrentLink)
 
-    else:
-        # Download and save the torrent.
-        download = pageLink['ref'].get_torrent(torrentLink)
-        torrentToStream = option.destdir + '/' + torrentName + '.torrent'
-        save_file(download, torrentToStream)
+    ###############################################################
+    # Getting the torrent.
+    # Use magne link to save the torrent.
+    ref = pageLink['ref']  # Reference to the tracker.
+    magnetLink = ref.get_magnet(torrentLink)
 
+    ###############################################################
+    # Getting the torrent metadata.
+    info = get_info(magnetLink, option.destdir)
+    # TODO add the aptitude to save the torrent.
+
+    ###############################################################
+    # Getting the subtitle.
     if option.subtitle:
-        from subtitle.opensubtitle import opensubtitle
         os = opensubtitle()
         print("Getting the subtitle from OpenSubtitle...", end="  ")
-        subtitle = os.get_subtitle(torrentName, option.language, option.destdir)
+        # TODO Add a better support for multifiles torrents.
+        fileInfo = info[0]
+        # For now we wiil just use the first one
+        subtitle = os.get_subtitle(fileInfo['name'],
+                                   option.language,
+                                   fileInfo['length'],
+                                   option.destdir)
+        # TODO ADD SIZE
         print("Saved as " + subtitle)
 
     # Launch peerflix
     command = "peerflix '%s' --%s --path %s --subtitles %s"\
-        % (torrentToStream, option.player, option.destdir, subtitle)
+        % (magnetLink, option.player, option.destdir, subtitle)
     try:
         peerflix = subprocess.Popen(command, shell=True)
         peerflix.wait()
@@ -179,10 +167,9 @@ def main(option):
         print("Do you want to remove the file ? [(y)es/(n)o] ", end="")
         remove = sys.stdin.readline().strip()
         if remove.lower() in ['yes', 'y', 'ye', 'ys']:
-            toRemove = option.destdir
-            if option.destdir[-1] != '/':
-                toRemove += '/'
-            toRemove += torrentName
+            toRemove = info[0]['folder']
+            if toRemove is None:
+                toRemove = info[0]['name']
             os.remove(toRemove)
 
     except:
@@ -319,7 +306,7 @@ if __name__ == "__main__":
             option.search = input()
 
         if option.no_data:
-            option.magnet = True
+            # option.magnet = True
             option.destdir = "/tmp"
 
         option.destdir = os.path.expanduser(option.destdir)
