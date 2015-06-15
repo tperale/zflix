@@ -6,10 +6,9 @@ import sys
 import argparse
 import subprocess
 from configParser import parse_config, parse_default
-# import json
 from multiprocessing import Process, Manager
-
 from torrent_info import get_info
+from subtitle.opensubtitle import opensubtitle
 
 class bcolors:
     HEADER = '\033[95m'
@@ -144,25 +143,19 @@ def main(option):
     torrentLink = pageLink['link']
     ###############################################################
     # Getting the torrent.
-    if option.magnet:
-        # Use magne link to save the torrent.
-        ref = pageLink['ref']
-        torrentToStream = ref.get_magnet(torrentLink)
 
-    else:
-        # Download and save the torrent.
-        download = pageLink['ref'].get_torrent(torrentLink)
-        torrentToStream = option.destdir + '/' + torrentName + '.torrent'
-        save_file(download, torrentToStream)
+    # Use magne link to save the torrent.
+    ref = pageLink['ref']
+    magnetLink = ref.get_magnet(torrentLink)
 
     ###############################################################
-    # Getting the output name.
-    info = get_info(torrentToStream)
+    # Getting the torrent metadata.
+    info = get_info(magnetLink)
+    # TODO add the aptitude to save the torrent.
 
     ###############################################################
     # Getting the subtitle.
     if option.subtitle:
-        from subtitle.opensubtitle import opensubtitle
         os = opensubtitle()
         print("Getting the subtitle from OpenSubtitle...", end="  ")
         #for fileInfo in info[0]:
@@ -176,7 +169,7 @@ def main(option):
 
     # Launch peerflix
     command = "peerflix '%s' --%s --path %s --subtitles %s"\
-        % (torrentToStream, option.player, option.destdir, subtitle)
+        % (magnetLink, option.player, option.destdir, subtitle)
     try:
         peerflix = subprocess.Popen(command, shell=True)
         peerflix.wait()

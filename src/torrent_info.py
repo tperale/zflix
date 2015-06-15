@@ -1,22 +1,54 @@
-import os
+# import os
+import requests
 
 
 class bencoding:
     # http://fileformats.wikia.com/wiki/Torrent_file
-    def __init__(self, toDecode):
+    def __init__(self, magnet):
         self.special = {'i': self.integer_eval,
                         'l': self.list_eval,
                         'd': self.dict_eval
                         }
 
-        if os.path.isfile(toDecode):
-            # It's a path to a torrent file.
-            self.reader = self.create_gen(toDecode)
-        else:
-            # It's a magnet file.
-            pass
+        # FIRST we need to decode the magnet  link and convert it in a torrent
+        # file, so we can parse it and get infos.
+        self.torrent = self.download_torrent(magnet)
+
+        self.reader = self.create_gen(self.torrent)
 
         self.result = None
+
+    def download_torrent(self, magnet):
+        """
+        Downlad from torrage a torrent file according to the magnet file passed
+        on argument.
+
+        DOC:
+            https://en.wikipedia.org/wiki/Magnet_URI_scheme
+        """
+        url = 'https://torrage.com/torrent/'
+        # First we should get the BitTorrent Info Hash ("xt=urn:btih:")
+        search = "xt=urn:btih:"
+        i = 0
+        while (i < (len(magnet) - len(search))) \
+                and ((magnet[i:i + len(search)]) != search):
+            i += 1
+
+        if i == (len(magnet) - len(search)):
+            raise Exception()
+
+        i += len(search)
+        # Adding the search length to set i at the start of the BIH
+
+        j = i # END of the info hash
+        while magnet[j] != '&' and j < len(magnet):
+            j += 1
+
+        # magnet[i:j] represent the BIH
+        print("Downloading the torrent from " + url + magnet[i:j])
+        torrent = requests.get(url + magnet[i:j])
+
+        return torrent.text
 
     def string_eval(self, i):
         res = ''
@@ -101,27 +133,27 @@ class bencoding:
 
         return res
 
-    def create_gen(self, fileName):
+    def create_gen(self, fileContent):
         """
         Create a generator from a torrent file, to return the next letter,
         each time he is called.
         """
-        torrent = open(fileName, 'r')
-        current = torrent.read(1)
-        while current != '':
-            yield current
-            current = torrent.read(1)
+        # torrent = open(fileName, 'r')
+        # current = torrent.read(1)
+        # while current != '':
+        #     yield current
+        #     current = torrent.read(1)
+        # torrent.close()
+        for i in fileContent:
+            yield i
 
-        torrent.close()
 
-
-def get_info(toDecode):
+def get_info(magnet, savePath=None):
     """
     Return a list of all files the torrent will output.
     """
-    torrent = bencoding(toDecode)
+    torrent = bencoding(magnet)
     info = torrent.decode()
-
     info = info['info']
 
     if info.get('files', False):
@@ -138,9 +170,10 @@ def get_info(toDecode):
                 'length': info['length'],
                 'folder': None}]
 
-
     return res
 
+
 if __name__ == '__main__':
+    # For debugging.
     import sys
     print(get_info(sys.argv[1]))
