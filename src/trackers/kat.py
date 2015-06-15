@@ -11,19 +11,6 @@ class kat:
     def __init__(self):
         self.results = {}
 
-    def get_torrent(self, pageLink):
-        """
-        Function returning the .torrent file to save into a user specified
-        directory.
-
-        ARGUMENT:
-            pageLink: The link of the page you want to get the torrent.
-
-        RETURN VALUE:
-            The .torrent file.
-        """
-        return (self.results[pageLink])["download"]
-
     def get_magnet(self, pageLink):
         """
         Function returning the magnet link for the torrent.
@@ -38,6 +25,14 @@ class kat:
 
     def _get_torrents_from_link(self, pageLink):
         """
+        Return the torrent from the "pageLink".
+
+        ARGUMENTS:
+            pageLink: The link of the page you want to get the torrents infos.
+
+        RETURN VALUE:
+            A dict with the following structure
+            https://github.com/thomacer/zflix/wiki/Adding-trackers.
         """
         result = []
         request = requests.get(pageLink)
@@ -96,6 +91,11 @@ class kat:
 
     def _get_popular(self):
         """
+        Get the popular right now torrent from kat.
+
+        RETURN VALUE:
+            A dict with the following structure
+            https://github.com/thomacer/zflix/wiki/Adding-trackers.
         """
         pageByType = ['https://kat.cr/movies/', 'https://kat.cr/tv/',
                       'https://kat.cr/anime/']
@@ -120,11 +120,14 @@ class kat:
 
     def search_torrent(self, search):
         """
-        Add to the dic "queryResult" with a refernce used for the key
-        a list of returned torrent link with a specific search term.
+        Search in kat the argument "search".
 
         ARGUMENTS:
             search: The user searched torrents arguments.
+
+        RETURN VALUE:
+            A dict with the following structure
+            https://github.com/thomacer/zflix/wiki/Adding-trackers.
         """
         if search == '':
             # If the user just want to search through popular torrents
@@ -133,4 +136,3 @@ class kat:
         pageLink = self.domain + "usearch/?q=" + search
 
         return self._get_torrents_from_link(pageLink)
-
