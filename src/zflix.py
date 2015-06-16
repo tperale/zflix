@@ -131,6 +131,13 @@ def main(option):
     info = get_info(magnetLink, option.destdir)
     # TODO add the aptitude to save the torrent.
 
+    command = "peerflix '%s' --%s" \
+        % (magnetLink, option.player)
+
+    if option.destdir != "/tmp":
+        command += " --path " + option.destdir
+
+
     ###############################################################
     # Getting the subtitle.
     if option.subtitle:
@@ -145,10 +152,8 @@ def main(option):
                                    option.destdir)
         # TODO ADD SIZE
         print("Saved as " + subtitle)
+        command += " -t " + subtitle
 
-    # Launch peerflix
-    command = "peerflix '%s' --%s --path %s --subtitles %s"\
-        % (magnetLink, option.player, option.destdir, subtitle)
     try:
         peerflix = subprocess.Popen(command, shell=True)
         peerflix.wait()
