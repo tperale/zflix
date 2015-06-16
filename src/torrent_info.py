@@ -46,7 +46,7 @@ class bencoding:
 
         # magnet[i:j] represent the BIH
         print("Downloading the torrent from " + url + magnet[i:j])
-        torrent = requests.get(url + magnet[i:j])
+        torrent = requests.get(url + magnet[i:j].upper())
 
         return torrent.text
 
@@ -152,7 +152,8 @@ def get_info(magnet, destdir):
     """
     Return a list of all files the torrent will output.
     """
-    torrent = bencoding(magnet.upper())
+    torrent = bencoding(magnet)
+
     info = torrent.decode()
     info = info['info']
 
