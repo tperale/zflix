@@ -152,7 +152,7 @@ def main(option):
                                    option.destdir)
         # TODO ADD SIZE
         print("Saved as " + subtitle)
-        command += " -t " + subtitle
+        command += " --subtitles '%s'" % subtitle
 
     try:
         peerflix = subprocess.Popen(command, shell=True)
