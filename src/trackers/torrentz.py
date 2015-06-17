@@ -12,38 +12,6 @@ class torrentz:
     def __init__(self):
         self.domain = 'https://www.torrentz.com'
 
-        self.locations = {"h33t": {"url": "http://www.h33t.to",
-                                   "dl": "h33t.to/get/"},
-                          "demonoid": {"url": "www.demonoid.pw",
-                                       "dl": "www.demonoid.pw/files/download/"},
-                          "seedpeer.eu": {"url": "www.seedpeer.eu/",
-                                          "dl": "/download/"},
-                          "rarbg": {"url": "rarbg.com/torrent/",
-                                    "dl": "rarbg.com/download.php?id="},
-                          #"tpb": {"url": "http://thepiratebay.org",
-                          #        "dl": "http://torrents.thepiratebay.org"},
-                          "yourbittorrent": {"url": "yourbittorent.com/torrent/",
-                                             "dl": "/down/*.torrent"},
-                          "isohunt": {"url": "http://isohunt.to",
-                                      "dl": "torrent.isohunt.to/download.php?id="},
-                          "torrentfunk.com": {"url": "/tor/*.torrent",
-                                              "dl": "www.torrentfunk.com/tor/*.torrent"},
-                          "limetorrents.cc": {"url": "http://www.limetorrents.cc",
-                                              "dl": "itorrents.org/torrent/"},
-                           "torrents.net": {"url": "http://www.torrents.net",
-                                            "dl": "torrents.net/down/*.torrent"},
-                          "vertor": {"url": "http://www.vertor.com",
-                                     "dl": "?mod=download."},
-                          "monova": {"url": "www.monova.org/torrent/",
-                                     "dl": "www.monova.org/download/torrent/"},
-                          "torrentdl": {"url": "torrentdownloads.me/torrent/",
-                                        "dl": "itorrents.org/torrent/"}
-                          #"torlock": {"url": "www.torlock.com",
-                          #            "dl": ".torrent"},
-                          #"torrentproject": {"url": "torrentproject.se",
-                          #                   "dl": "torrentproject.se/torrent/*.torrent"}
-                          }
-
     def get_magnet_from_tracker(self, trackerPage):
         """
         Get a magnet link on a webpage
@@ -87,16 +55,9 @@ class torrentz:
         trackersUrls.pop(0)
         # Every trackers listed in the page
 
-        # TODO USE SELF LOCATION 'URL'
-        # TODO LOCATION IS NOW USELESS WITH MAGNET !!!!
-
-        for tracker in map(lambda x: x.get('href'), trackersUrls):
-            for location in self.locations:
-                if location in tracker:
-                    trackerPage = requests.get(tracker)
-                    yield trackerPage.text, location
-                    break # Trying another tracker if this one is not OK.
-
+        for tracker in trackersUrls:
+            # YIELD every tracker link to try to get the magnet link there.
+            yield tracker.get('href')
 
         print("Error: Torrent found in none of the locations")
 
@@ -114,7 +75,7 @@ class torrentz:
         magnet = False
 
         while magnet is False:
-            trackerPage, trackerName = next(downloadLocationTest, (None, None))
+            trackerPage = next(downloadLocationTest, None)
             if trackerPage is not None:
                 magnet = self.get_magnet_from_tracker(trackerPage)
             else:
