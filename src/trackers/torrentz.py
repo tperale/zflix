@@ -12,7 +12,7 @@ class torrentz:
     def __init__(self):
         self.domain = 'https://www.torrentz.com'
 
-    def get_magnet_from_tracker(self, trackerPage):
+    def get_magnet_from_tracker(self, trackerLink):
         """
         Get a magnet link on a webpage
 
