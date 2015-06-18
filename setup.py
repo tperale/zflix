@@ -6,8 +6,8 @@ except ImportError:
 setup(
     name='zflix', version='0.03',
     description='Script that seek and play torrent',
-    long_description=('A CLI script that search through torrentz your'
-                      + ' demand and play it with peerflix'),
+    long_description=('A CLI script that search '
+                      + ' and play torrents with peerflix'),
     author='thomacer',
     author_email='thomas.perale@gmail.com',
     url='https://github.com/thomacer/zflix',
