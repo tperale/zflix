@@ -17,47 +17,53 @@ class torrentz:
         Get a magnet link on a webpage
 
         ARGUMENT:
-            trackerPage: A link to a tracker.
+            trackerLink: A link to a tracker.
 
         RETURN VALUE:
             A magnet link.
         """
-        soup = bs4.BeautifulSoup(trackerPage)
+        page = requests.get(trackerLink)
+        page = page.text
+
+        # Getting all the link in the page to try to get the magnet link.
+        soup = bs4.BeautifulSoup(page)
         urls = soup.find_all('a')
 
-        i = 0
-        res = False
-        while res is False and i < len(urls):
-            if 'magnet:' in urls[i].get('href'):
-                print('Getting ' + urls[i].get('href'))
-                res = urls[i].get('href')
-            i += 1
+        magnetLink = None
+        for link in urls:
+            inPageLink = link.get('href')
+            if inPageLink is not None and 'magnet:' in inPageLink:
+                print('Getting ' + link.get('href'))
+                magnetLink = link.get('href')
 
-        return res
+        return magnetLink
 
     def get_specific_tracker(self, pageLink):
         """
         Get the a supported tracker from a torrentz page.
 
         ARGUMENT:
-            pageLink: A torrentz download page.
+            pageLink: A torrentz download page link.
 
         RETURN VALUE:
-            The page of a supported tracker, and the name of the tracker.
+            The link of a supported tracker.
         """
+        # Getting the page.
         page = requests.get(pageLink)
         page = page.text
+
         soup = bs4.BeautifulSoup(page)
 
         trackersUrls = soup.find('div', class_="download")
         # Get the div with the links first
-        trackersUrls = trackersUrls.find_all('a')
-        trackersUrls.pop(0)
+        trackersUrls = trackersUrls.find_all('dl')
+        trackersUrls.pop(0) # First is a sponsored link
         # Every trackers listed in the page
 
         for tracker in trackersUrls:
             # YIELD every tracker link to try to get the magnet link there.
-            yield tracker.get('href')
+            trackerLink = tracker.find('a')
+            yield trackerLink.get('href')
 
         print("Error: Torrent found in none of the locations")
 
@@ -75,9 +81,9 @@ class torrentz:
         magnet = False
 
         while magnet is False:
-            trackerPage = next(downloadLocationTest, None)
-            if trackerPage is not None:
-                magnet = self.get_magnet_from_tracker(trackerPage)
+            trackerLink = next(downloadLocationTest, None)
+            if trackerLink is not None:
+                magnet = self.get_magnet_from_tracker(trackerLink)
             else:
                 break
 
