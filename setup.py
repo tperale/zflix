@@ -8,8 +8,17 @@ setup(
     description='Script that seek and play torrent',
     long_description=('A CLI script that search through torrentz your'
                       + ' demand and play it with peerflix'),
+    classifiers=[
+        'Environment :: Console',
+        'Operating System :: GNU/Linux',
+        'Programming Language :: Python',
+        'Topic :: Torrents',
+    ],
+    scipts = [
+        'scripts/zflix',
+    ],
     author='thomacer',
-    author_email='thomas.perale@gmail.com',
+    author_email='thomas.perale@openmailbox.org',
     url='https://github.com/thomacer/zflix',
     license='GPL V2',
     install_requires=[
