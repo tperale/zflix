@@ -1,4 +1,7 @@
-import ConfigParser
+try:
+    import ConfigParser
+except:
+    import configparser as ConfigParser
 import os
 
 
@@ -44,4 +47,4 @@ def parse_default():
     """
     config = ConfigParser.ConfigParser()
     config.readfp(open("defaultFile"))
-
+    return config
