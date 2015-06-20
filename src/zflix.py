@@ -146,13 +146,17 @@ def main(option):
         # TODO Add a better support for multifiles torrents.
         fileInfo = info[0]
         # For now we wiil just use the first one
-        subtitle = os.get_subtitle(fileInfo['name'],
-                                   option.language,
-                                   fileInfo['length'],
-                                   option.destdir)
-        # TODO ADD SIZE
-        print("Saved as " + subtitle)
-        command += " --subtitles '%s'" % subtitle
+        try:
+            subtitle = os.get_subtitle(fileInfo['name'],
+                                    option.language,
+                                    fileInfo['length'],
+                                    option.destdir)
+            # TODO ADD SIZE
+            print("Saved as " + subtitle)
+            command += " --subtitles '%s'" % subtitle
+        except:
+            # TODO improve error detection
+            pass
 
     try:
         peerflix = subprocess.Popen(command, shell=True)

@@ -118,7 +118,11 @@ class opensubtitle:
         if subtitle is False:
             print('not hash')
             # Research by query are often more flexible and give more result.
-            subtitle = self.search_query(name, lang).pop(0)
+            subtitle = self.search_query(name, lang)
+            if subtitle is not None:
+                subtitle = subtitle.pop(0)
+            else:
+                raise Exception
 
         # for now we get the first subtitle of "subtitle", then we will try
         # to be more precise
