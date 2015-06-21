@@ -4,6 +4,10 @@ import requests
 import zipfile
 
 
+class NoSubtitleFound(Exception):
+    def __init__(self, arg=None):
+        print("No subtitle found.")
+
 class opensubtitle:
     def __init__(self):
         self.domain = "http://api.opensubtitles.org/xml-rpc"
@@ -74,8 +78,8 @@ class opensubtitle:
 
         res = self.xmlrpc_server.SearchSubtitles(self.token, searchTerms
                                                  )['data']
-        # If there is no result, the api return False.
 
+        # If there is no result, the api return False.
         return res
 
     def download(self, link, location, name):
@@ -119,28 +123,12 @@ class opensubtitle:
             print('not hash')
             # Research by query are often more flexible and give more result.
             subtitle = self.search_query(name, lang)
-            if subtitle is not None:
+            if subtitle:
                 subtitle = subtitle.pop(0)
             else:
-                raise Exception
-
+                raise NoSubtitleFound
         # for now we get the first subtitle of "subtitle", then we will try
         # to be more precise
 
         # Get the download.
         return self.download(subtitle["ZipDownloadLink"], location, name)
-
-
-if __name__ == "__main__":
-    osbtl = opensubtitle()
-    from pprint import pprint
-    #pprint(osbtl.search_hash("Zodiac[2007]DvDrip[Eng]-aXXo", "eng"))
-    # pprint(osbtl.search_query("Zodiac[2007]DvDrip[Eng]-aXXo", "fre" ))
-    pprint(osbtl.get_subtitle("Zodiac (2007)", "fre", '/tmp'))
-    #pprint(osbtl.search_query("Zodiac[2007]DvDrip[Eng]-aXXo", "9e107d9d372bb6826bd81d3542a419d6"))
-    #pprint(osbtl.search_tag("Zodiac[2007]DvDrip[Eng]-aXXo", "French"))
-    #print('3')
-    #res = osbtl.search_query("Zodiac", "fr")
-    #for i in res['data']:
-    #    pprint(i)
-    #    test = raw_input()

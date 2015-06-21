@@ -9,6 +9,7 @@ from configParser import parse_config, parse_default
 from multiprocessing import Process, Manager
 from torrent_info import get_info
 from subtitle.opensubtitle import opensubtitle
+from subtitle.opensubtitle import NoSubtitleFound
 
 class bcolors:
     HEADER = '\033[95m'
@@ -154,8 +155,7 @@ def main(option):
             # TODO ADD SIZE
             print("Saved as " + subtitle)
             command += " --subtitles '%s'" % subtitle
-        except:
-            # TODO improve error detection
+        except NoSubtitleFound:
             pass
 
     try:
