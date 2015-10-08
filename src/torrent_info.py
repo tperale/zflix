@@ -26,7 +26,7 @@ class bencoding:
         DOC:
             https://en.wikipedia.org/wiki/Magnet_URI_scheme
         """
-        url = 'https://torrage.com/torrent/'
+        url = 'https://torrage.info/torrent.php?h='
         # First we should get the BitTorrent Info Hash ("xt=urn:btih:")
         search = "xt=urn:btih:"
         i = 0
