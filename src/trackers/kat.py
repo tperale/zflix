@@ -37,7 +37,7 @@ class kat:
         result = []
         request = requests.get(pageLink)
         data = request.text
-        soup = bs4.BeautifulSoup(data)
+        soup = bs4.BeautifulSoup(data, "html.parser")
         odd = soup.find_all("tr", class_="odd")
         # First torrent on the page is considered odd
         even = soup.find_all("tr", class_="even")

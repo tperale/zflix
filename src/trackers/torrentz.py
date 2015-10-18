@@ -26,7 +26,7 @@ class torrentz:
         page = page.text
 
         # Getting all the link in the page to try to get the magnet link.
-        soup = bs4.BeautifulSoup(page)
+        soup = bs4.BeautifulSoup(page, "html.parser")
         urls = soup.find_all('a')
 
         magnetLink = None
@@ -52,7 +52,7 @@ class torrentz:
         page = requests.get(pageLink)
         page = page.text
 
-        soup = bs4.BeautifulSoup(page)
+        soup = bs4.BeautifulSoup(page, "html.parser")
 
         trackersUrls = soup.find('div', class_="download")
         # Get the div with the links first
@@ -100,7 +100,7 @@ class torrentz:
         """
         torrentzPage = requests.get(self.domain + '/any?f=' + search)
         torrentzPage = torrentzPage.text
-        soup = bs4.BeautifulSoup(torrentzPage)
+        soup = bs4.BeautifulSoup(torrentzPage, "html.parser")
         torrentLinks = soup.find('div', class_="results")
         torrentLinks = torrentLinks.find_all('dl')
 
